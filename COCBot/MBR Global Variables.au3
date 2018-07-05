@@ -1657,3 +1657,7 @@ Global $g_iPurgeJobCount[8] = [0, 0, 0, 0, 0, 0, 0, 0]
 Global $g_iPurgeMax = 5 ; [0] is unlimited , 1-10
 
 Global $g_bChkCollectFreeMagicItems = True
+
+; Builder Status - Demen
+Global $g_sNextBuilderReadyTime = ""
+Global $g_asNextBuilderReadyTime[8] = ["", "", "", "", "", "", "", ""]
