@@ -1470,11 +1470,6 @@ Func SearchArmy($sImageDir = "", $x = 0, $y = 0, $x1 = 0, $y1 = 0, $sArmyType = 
 			EndIf
 		Next
 	EndIf
-	If $sArmyType = "CC" Then
-		For $i = 0 To UBound($aResult) - 1
-			$aResult[$i][3] = Number(getBarracksNewTroopQuantity(Slot($aResult[$i][1], StringInStr($aResult[$i][0], "Spell") <> 1 ? "troop" : "spells"), 498)) ; coc-newarmy
-		Next
-	EndIf
 
 	Return $aResult
 EndFunc   ;==>SearchArmy
