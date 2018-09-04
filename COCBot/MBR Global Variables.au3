@@ -1728,3 +1728,11 @@ Global $g_sBonusGold = Null
 Global $g_sBonusElixir = Null
 Global $g_sBonusDE = Null
 Global $g_sPercentagesResources = Null
+
+; Stop for war - War Preparation Demen
+Global $g_bStopForWar
+Global $g_iStopTime, $g_iReturnTime
+Global $g_bTrainWarTroop, $g_bUseQuickTrainWar, $g_aChkArmyWar[3], $g_aiWarCompTroops[$eTroopCount], $g_aiWarCompSpells[$eSpellCount]
+Global $g_bRequestCCForWar,	$g_sTxtRequestCCForWar
+
+

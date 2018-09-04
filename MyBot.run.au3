@@ -718,6 +718,7 @@ Func runBot() ;Bot that runs everything in order
 			If $g_bRestart = True Then ContinueLoop
 			If _Sleep($DELAYRUNBOT3) Then Return
 			VillageReport()
+            CheckStopForWar()
 			If Not $g_bRunState Then Return
 			If $g_bOutOfGold = True And (Number($g_aiCurrentLoot[$eLootGold]) >= Number($g_iTxtRestartGold)) Then ; check if enough gold to begin searching again
 				$g_bOutOfGold = False ; reset out of gold flag

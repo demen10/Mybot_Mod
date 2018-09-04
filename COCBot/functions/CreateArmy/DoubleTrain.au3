@@ -15,7 +15,7 @@
 ; ===============================================================================================================================
 #include-once
 
-Func DoubleTrain($bQuickTrain = False)
+Func DoubleTrain($bQuickTrain = False, $bWarTroop = False)
 
 	If Not $g_bDoubleTrain Then Return
 	Local $bDebug = $g_bDebugSetlogTrain Or $g_bDebugSetlog
@@ -48,8 +48,8 @@ Func DoubleTrain($bQuickTrain = False)
 		If $bSetlog And $TroopCamp[1] <> $g_iTotalCampSpace Then _
 			SetLog("Incorrect Troop combo: " & $g_iTotalCampSpace & " vs Total camp: " & $TroopCamp[1] & @CRLF & "                 Double train may not work well", $COLOR_DEBUG)
 
-		If $TroopCamp[0] < $TroopCamp[1] Then ; <280/280
-			If $g_bDonationEnabled And $g_bChkDonate And MakingDonatedTroops("Troops") Then
+		If $bWarTroop Or $TroopCamp[0] < $TroopCamp[1] Then ; <280/280
+			If Not $bWarTroop And $g_bDonationEnabled And $g_bChkDonate And MakingDonatedTroops("Troops") Then
 				If $bDebug Then SetLog($Step & ". MakingDonatedTroops('Troops')", $COLOR_DEBUG)
 				$Step += 1
 				If $Step = 6 Then ExitLoop
@@ -100,8 +100,8 @@ Func DoubleTrain($bQuickTrain = False)
 				If $g_bForceBrewSpells And $SpellCamp[1] > $TotalSpell Then $SpellCamp[1] = $TotalSpell
 			EndIf ;
 
-			If $SpellCamp[0] < $SpellCamp[1] Then ; 0-10/11
-				If $g_bDonationEnabled And $g_bChkDonate And MakingDonatedTroops("Spells") Then
+			If $bWarTroop Or $SpellCamp[0] < $SpellCamp[1] Then ; 0-10/11
+				If Not $bWarTroop And $g_bDonationEnabled And $g_bChkDonate And MakingDonatedTroops("Spells") Then
 					If $bDebug Then SetLog($Step & ". MakingDonatedTroops('Spells')", $COLOR_DEBUG)
 					$Step += 1
 					If $Step = 6 Then ExitLoop
@@ -161,6 +161,9 @@ Func DoubleTrain($bQuickTrain = False)
 	EndIf
 
 	If _Sleep(250) Then Return
+
+	DoubleTrainSiege($bDebug)
+
 	ClickP($aAway, 2, 0, "#0346") ;Click Away
 	If _Sleep(250) Then Return
 
@@ -271,6 +274,8 @@ Func DoubleQuickTrain($bSetlog, $bDebug)
 	EndIf
 
 	If _Sleep(250) Then Return
+
+	DoubleTrainSiege($bDebug)
 
 	ClickP($aAway, 2, 0, "#0346") ;Click Away
 
@@ -419,3 +424,32 @@ Func CheckQueueSpellAndTrainRemain($ArmyCamp, $bDebug)
 	EndIf
 	Return True
 EndFunc   ;==>CheckQueueSpellAndTrainRemain
+
+Func DoubleTrainSiege($bDebug)
+	Local $iSiege = $eSiegeWallWrecker
+	If $g_iTotalTrainSpaceSiege < 1 Then Return; train no siege
+	If $g_aiArmyCompSiegeMachine[$eSiegeWallWrecker] > 0 And $g_aiArmyCompSiegeMachine[$eSiegeBattleBlimp] > 0 Then ; train both types of siege
+		If $bDebug Then SetLog("Army has both types of siege. Double train siege might cause unbalance.", $COLOR_DEBUG)
+	Else
+		If $g_aiArmyCompSiegeMachine[$eSiegeBattleBlimp] > 0 Then $iSiege = $eSiegeBattleBlimp
+
+		If Not OpenSiegeMachinesTab(True, "DoubleTrainSiege()") Then Return
+		If _Sleep(500) Then Return
+		Local $checkPixel[4] = [58 + $iSiege * 171, 556, 0x47717E, 10] ; WallW = 58, BlimpB = 58 + 171 = 229
+		If _CheckPixel($checkPixel, True, Default, $g_asSiegeMachineNames[$iSiege]) Then
+			; refilling 1st Army just in case 1st Train failed or siege is donated
+			If $g_aiCurrentSiegeMachines[$iSiege] < $g_aiArmyCompSiegeMachine[$iSiege] Then
+				Local $HowMany = $g_aiArmyCompSiegeMachine[$iSiege] - $g_aiCurrentSiegeMachines[$iSiege]
+				PureClick($checkPixel[0], $checkPixel[1], $HowMany, $g_iTrainClickDelay)
+				Setlog("Build " & $HowMany & " " & $g_asSiegeMachineNames[$iSiege] & ($HowMany >= 2 ? "s" : ""), $COLOR_SUCCESS)
+				If _Sleep(250) Then Return
+			EndIf
+
+			; train 2nd Army
+			PureClick($checkPixel[0], $checkPixel[1], $g_aiArmyCompSiegeMachine[$iSiege], $g_iTrainClickDelay)
+			Setlog("Build " & $g_aiArmyCompSiegeMachine[$iSiege] & " " & $g_asSiegeMachineNames[$iSiege] & ($g_aiArmyCompSiegeMachine[$iSiege] >= 2 ? "s" : ""), $COLOR_SUCCESS)
+		EndIf
+
+		If _Sleep(250) Then Return
+	EndIf
+EndFunc   ;==>DoubleTrainSiege
