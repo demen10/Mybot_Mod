@@ -4,7 +4,7 @@
 ; Syntax ........: $aXXXXX[Y]  : XXXX is name of point or item being checked, Y = 2 for position only, or 4 when color/tolerance value included
 ; Author ........:
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -12,17 +12,13 @@
 ; ===============================================================================================================================
 ;                                 x    y     color  tolerance
 Global $aCenterEnemyVillageClickDrag = [65, 545] ; Scroll village using this location in the water
-Global $aCenterHomeVillageClickDrag = [160, 665] ; Scroll village using this location in the water
+Global $aCenterHomeVillageClickDrag = [430, 650] ; Scroll village using this location in the water
 Global $aIsReloadError[4] = [457, 301 + $g_iMidOffsetY, 0x33B5E5, 10] ; Pixel Search Check point For All Reload Button errors, except break ending
 Global $aIsMain[4] = [278, 9, 0x77BDE0, 20] ; Main Screen, Builder Info Icon
 Global $aIsMainGrayed[4] = [278, 9, 0x3C5F70, 15] ; Main Screen, Builder Info Icon grayed
 
 Global $aIsOnBuilderBase[4] = [838, 18, 0xffff46, 10] ; Check the Gold Coin from resources , is a square not round
 
-Global $aTopLeftClient[4] = [1, 1, 0x000000, 0] ; TopLeftClient: Tolerance not needed
-Global $aTopMiddleClient[4] = [475, 1, 0x000000, 0] ; TopMiddleClient: Tolerance not needed
-Global $aTopRightClient[4] = [850, 1, 0x000000, 0] ; TopRightClient: Tolerance not needed
-Global $aBottomRightClient[4] = [850, 675 + $g_iBottomOffsetY, 0x000000, 0] ; BottomRightClient: Tolerance not needed
 Global $aIsConnectLost[4] = [255, 271 + $g_iMidOffsetY, 0x33B5E5, 20] ; COC message : 'Connection Lost' network error or annother device
 Global $aIsCheckOOS[4] = [223, 272 + $g_iMidOffsetY, 0x33B5E5, 20] ; COC message : 'Connection Lost' network error or annother device
 Global $aIsMaintenance[4] = [350, 273 + $g_iMidOffsetY, 0x33B5E5, 20] ; COC message : 'Anyone there?'
@@ -55,7 +51,7 @@ Global $aArmyCampSize[2] = [110, 136 + $g_iMidOffsetY] ; Training Window, Overvi
 Global $aSiegeMachineSize[2] = [755, 136 + $g_iMidOffsetY] ; Training Window, Overview screen, Current Number/Total Number
 Global $aArmySpellSize[2] = [99, 284 + $g_iMidOffsetY] ; Training Window Overviewscreen, current number/total capacity
 Global $g_aArmyCCSpellSize[2] = [473, 438 + $g_iMidOffsetY] ; Training Window, Overview Screen, Current CC Spell number/total cc spell capacity
-Global $aArmyCCRemainTime[2] = [782, 540 + $g_iMidOffsetY] ; Training Window Overviewscreen, Minutes & Seconds remaining till can request again
+Global $aArmyCCRemainTime[2] = [782, 552 + $g_iMidOffsetY] ; Training Window Overviewscreen, Minutes & Seconds remaining till can request again
 Global $aIsCampNotFull[4] = [149, 150 + $g_iMidOffsetY, 0x761714, 20] ; Training Window, Overview screen Red pixel in Exclamation mark with camp is not full
 Global $aIsCampFull[4] = [128, 151 + $g_iMidOffsetY, 0xFFFFFF, 10] ; Training Window, Overview screen White pixel in check mark with camp IS full (can not test for Green, as it has trees under it!)
 Global $aBarrackFull[4] = [388, 154 + $g_iMidOffsetY, 0xE84D50, 20] ; Training Window, Barracks Screen, Red pixel in Exclamation mark with Barrack is full
@@ -101,9 +97,6 @@ Global $aAttackForTreasury[4] = [88, 619 + $g_iMidOffsetY, 0xF0EBE8, 5] ; Red pi
 Global $aAtkHasDarkElixir[4]  = [ 31, 144, 0x282020, 10] ; Attack Page, Check for DE icon
 Global $aVillageHasDarkElixir[4] = [837, 134, 0x3D2D3D, 10] ; Main Page, Base has dark elixir storage
 
-;Global $aKingHealth          = [ -1, 572 + $g_iBottomOffsetY, 0x4FD404,110] ; Attack Screen, Check King's Health, X coordinate is dynamic, not used from array
-;Global $aQueenHealth         = [ -1, 573 + $g_iBottomOffsetY, 0x4FD404,110] ; Attack Screen, Check Queen's Health, X coordinate is dynamic, not used from array
-
 Global $aCheckTopProfile[4] = [200, 166, 0x868CAC, 5]
 Global $aCheckTopProfile2[4] = [220, 355, 0x4E4D79, 5]
 
@@ -111,13 +104,12 @@ Global $aIsTabOpen[4] = [0, 145, 0xEAEAE3, 25];Check if specific Tab is opened, 
 
 Global $aRecievedTroops[4] = [200 ,215 ,0xFFFFFF, 20] ; Y of You have recieved blabla from xx!
 
-; Check healthy color RGB ( 220,255,19~27) ; the king and queen haves the same Y , but warden is a little lower ...
-; King Crown ; background pixel not at green bar
-Global $aKingHealth = [-1, 569 + $g_iBottomOffsetY, 0x00D500, 15] ; Attack Screen, Check King's Health, X coordinate is dynamic, not used from array   ;  -> with slot compensation 0xbfb29e
-; Queen purple between crown ; background pixel not at green bar
-Global $aQueenHealth = [-1, 569 + $g_iBottomOffsetY, 0x00D500, 15] ; Attack Screen, Check Queen's Health, X coordinate is dynamic, not used from array  ;  -> with slot compensation 0xe08227
-; Warden hair ; background pixel not at green bar
-Global $aWardenHealth = [-1, 569 + $g_iBottomOffsetY, 0x00D500, 15] ; Attack Screen, Check Warden's Health, X coordinate is dynamic, not used from array  ;  -> with slot compensation 0xe08227
+; King Health Bar, check at the middle of the bar, index 4 is x-offset added to middle of health bar
+Global $aKingHealth = [-1, 569 + $g_iBottomOffsetY, 0x00D500, 15, 13]
+; Queen Health Bar, check at the middle of the bar, index 4 is x-offset added to middle of health bar
+Global $aQueenHealth = [-1, 569 + $g_iBottomOffsetY, 0x00D500, 15, 8]
+; Warden Health Bar, check at the middle of the bar, index 4 is x-offset added to middle of health bar
+Global $aWardenHealth = [-1, 569 + $g_iBottomOffsetY, 0x00D500, 15, 3]
 
 ; attack report... stars won
 Global $aWonOneStarAtkRprt[4] = [325, 180 + $g_iMidOffsetY, 0xC8CaC4, 30] ; Center of 1st Star reached attacked village
@@ -126,10 +118,13 @@ Global $aWonThreeStarAtkRprt[4] = [534, 180 + $g_iMidOffsetY, 0xC8CAC7, 30] ; Ce
 ; pixel color: location information								BS 850MB (Reg GFX), BS 500MB (Med GFX) : location
 
 Global $NextBtn[4] = [780, 546 + $g_iBottomOffsetY, 0xD34300, 20] ;  Next Button
-; Someone asking troops : Color 0xD0E978 in x = 121
+Global $a12OrMoreSlots[4] = [16, 648, 0x4583B9, 25] ; Attackbar Check if 12+ Slots exist
+Global $aDoubRowAttackBar[4] = [68, 486, 0xFC5D64, 20]
+Global $aTroopIsDeployed[4] = [0, 0, 0x404040, 20] ; Attackbar Remain Check X and Y are Dummies
+Global Const $aIsAttackPage[4] = [56, 548 + $g_iBottomOffsetY, 0xcf0d0e, 20] ; red button "end battle" 860x780
 
-; 1 - Dark Gray : Castle filled/No Castle | 2 - Dark Green : Available or Already made | 3 - White : Available or Castle filled/No Castle
-Global $aRequestTroopsAO[6] = [761, 580, 0x919191, 0x6DB630, 0xFFFFFE, 15] ; Button Request Troops in Army Overview  (x,y, Gray - Full/No Castle, Green - Available or Already, White - Available or Full)
+; 1 - Dark Gray : Castle filled/No Castle | 2 - Light Green : Available or Already made | 3 - White : Available or Castle filled/No Castle
+Global $aRequestTroopsAO[6] = [761, 592, 0x565656, 0x71BA2F, 0xFFFFFE, 25] ; Button Request Troops in Army Overview  (x,y, Gray - Full/No Castle, Green - Available or Already, White - Available or Full)
 
 Global Const $aOpenChatTab[4] = [19, 335 + $g_iMidOffsetY, 0xE88D27, 20]
 Global Const $aCloseChat[4] = [331, 330 + $g_iMidOffsetY, 0xF0951D, 20] ; duplicate with $aChatTab above, need to rename and fix all code to use one?
@@ -146,9 +141,6 @@ Global Const $aRtnHomeCheck2[4] = [497, 548 + $g_iMidOffsetY, 0x79C326, 20]
 ;Global Const $aRtnHomeCheck3[4]      = [ 284,  28, 0x41B1CD, 20]
 
 Global Const $aSearchLimit[6] = [19, 565, 104, 580, 0xD9DDCF, 10] ; (kaganus) no idea what this is for
-
-;inattackscreen
-Global Const $aIsAttackPage[4] = [56, 548 + $g_iBottomOffsetY, 0xcf0d0e, 20] ; red button "end battle" 860x780
 
 ;CheckImageType (Normal, Snow, etc)
 Global Const $aImageTypeN1[4] = [237, 161, 0xD5A849, 30] ; Sand on Forest Edge 'Lane' 860x780
@@ -176,18 +168,24 @@ Global $aButtonSetting[4] = [820, 550 + $g_iMidOffsetY, 0xFFFFFF, 10] ; Setting 
 Global $aIsSettingPage[4] = [753, 75 + $g_iMidOffsetY, 0xFF8F95, 10] ; Main Screen, Setting page open - left upper corner of x button
 
 ;Google Play
-Global $aButtonConnected[4] = [430, 380 + $g_iMidOffsetY, 0xD8F480, 20] ; Setting screen, Connected button
-Global $aButtonDisconnected[4] = [430, 380 + $g_iMidOffsetY, 0xFF7C81, 20] ; Setting screen, Disconnected button
+Global $aButtonConnected[4] = [602, 374 + $g_iMidOffsetY, 0xDAF481, 20] ; Setting screen, Connected button
+Global $aButtonDisconnected[4] = [602, 374 + $g_iMidOffsetY, 0xFF7E82, 20] ; Setting screen, Disconnected button
 Global $aListAccount[4] = [635, 210 + $g_iMidOffsetY, 0xFFFFFF, 10] ; Accounts list google, White
 Global $aButtonVillageLoad[4] = [515, 411 + $g_iMidOffsetY, 0x6EBD1F, 20] ; Load button, Green
 Global $aTextBox[4] = [320, 160 + $g_iMidOffsetY, 0xFFFFFF, 10] ; Text box, White
 Global $aButtonVillageOkay[4] = [500, 170 + $g_iMidOffsetY, 0x81CA2D, 20] ; Okay button, Green
+
 ;SuperCell ID
-Global $aButtonConnectedSCID[4] = [430, 205 + $g_iMidOffsetY, 0x6EB730, 20] ; Setting creen, Supercell ID Connected button
-Global $aButtonLogOutSCID[4] = [700,  285 + $g_iMidOffsetY, 0x308AFB, 20] ; Supercell ID, Log Out button
-Global $aButtonConfirmSCID[4] = [460, 410 + $g_iMidOffsetY, 0x328AFB, 20] ; Supercell ID, Confirm button
+Global $aButtonConnectedSCID[4] = [453, 513 + $g_iMidOffsetY, 0x72BB2F, 20] ; Setting screen, Supercell ID Connected button
+Global $aButtonLogOutSCID[4] = [615,  270 + $g_iMidOffsetY, 0x308AFB, 20] ; Supercell ID, Log Out button
+Global $aButtonConfirmSCID[4] = [475, 420 + $g_iMidOffsetY, 0x2C88FA, 20] ; Supercell ID, Confirm button
 Global $aListAccountSCID[4] = [490, 185 + $g_iMidOffsetY, 0x000000, 10] ; Supercell ID, Black check in word "ID"
 Global $aCloseTabSCID[4] = [732, 145] ; Button Close Supercell ID tab
+
+;Train
+Global $aButtonEditArmy[4] = [800, 542, 0xDDF685, 25]
+Global $aButtonRemoveTroopsOK1[4] = [747, 582, 0x76BF2F, 20]
+Global $aButtonRemoveTroopsOK2[4] = [500, 447, 0x6DBC1F, 20]
 
 Global $aTrainBarb[4]  = [-1, -1, -1, -1]
 Global $aTrainArch[4]  = [-1, -1, -1, -1]
@@ -209,6 +207,7 @@ Global $aTrainGole[4] = [-1, -1, -1, -1]
 Global $aTrainWitc[4] = [-1, -1, -1, -1]
 Global $aTrainLava[4] = [-1, -1, -1, -1]
 Global $aTrainBowl[4] = [-1, -1, -1, -1]
+Global $aTrainIceG[4] = [-1, -1, -1, -1]
 Global $aTrainLSpell[4] = [-1, -1, -1, -1]
 Global $aTrainHSpell[4] = [-1, -1, -1, -1]
 Global $aTrainRSpell[4] = [-1, -1, -1, -1]
@@ -219,10 +218,12 @@ Global $aTrainPSpell[4] = [-1, -1, -1, -1]
 Global $aTrainESpell[4] = [-1, -1, -1, -1]
 Global $aTrainHaSpell[4] = [-1, -1, -1, -1]
 Global $aTrainSkSpell[4] = [-1, -1, -1, -1]
+Global $aTrainBtSpell[4] = [-1, -1, -1, -1]
+Global $aTrain[4] = [-1, -1, -1, -1]
 
 Global $aTrainArmy[$eArmyCount] = [$aTrainBarb, $aTrainArch, $aTrainGiant, $aTrainGobl, $aTrainWall, $aTrainBall, $aTrainWiza, $aTrainHeal, $aTrainDrag, $aTrainPekk, $aTrainBabyD, $aTrainMine, $aTrainEDrag, _
-								   $aTrainMini, $aTrainHogs, $aTrainValk, $aTrainGole, $aTrainWitc, $aTrainLava, $aTrainBowl, 0, 0, 0, 0, $aTrainLSpell, $aTrainHSpell, $aTrainRSpell, $aTrainJSpell, $aTrainFSpell, $aTrainCSpell, _
-								   $aTrainPSpell, $aTrainESpell, $aTrainHaSpell, $aTrainSkSpell]
+								   $aTrainMini, $aTrainHogs, $aTrainValk, $aTrainGole, $aTrainWitc, $aTrainLava, $aTrainBowl, $aTrainIceG, 0, 0, 0, 0, $aTrainLSpell, $aTrainHSpell, $aTrainRSpell, $aTrainJSpell, $aTrainFSpell, $aTrainCSpell, _
+								   $aTrainPSpell, $aTrainESpell, $aTrainHaSpell, $aTrainSkSpell, $aTrainBtSpell]
 ;Change Language To English
 Global $aButtonLanguage[4] = [210, 375 + $g_iMidOffsetY, 0xD0E978, 20]
 Global $aListLanguage[4] = [110, 90 + $g_iMidOffsetY, 0xFFFFFF, 10]

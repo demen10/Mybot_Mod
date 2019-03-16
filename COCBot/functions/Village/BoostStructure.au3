@@ -1,12 +1,12 @@
 ; #FUNCTION# ====================================================================================================================
-; Name ..........: Boost any sstructure (King, Queen, Warden, Barracks, Spell Factory)
+; Name ..........: Boost any structure (King, Queen, Warden)
 ; Description ...:
 ; Syntax ........: BoostStructure($sName, $sOcrName, $aPos, ByRef $icmbBoostValue, $cmbBoostCtrl)
 ; Parameters ....:
 ; Return values .: True if boosted, False if not
 ; Author ........: Cosote Oct. 2016
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki

@@ -7,7 +7,7 @@
 ; Return values .: None
 ; Author ........: Sardo (2016-01)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -62,6 +62,7 @@ Func IsSearchModeActive($g_iMatchMode, $nocheckHeroes = False, $bNoLog = False)
 	If $g_abSearchSiegeWaitEnable[$g_iMatchMode] Then
 		If (($g_aiAttackUseSiege[$g_iMatchMode] = 1 And ($g_aiCurrentSiegeMachines[$eSiegeWallWrecker] > 0 Or $g_aiCurrentCCSiegeMachines[$eSiegeWallWrecker] > 0)) Or _
 			($g_aiAttackUseSiege[$g_iMatchMode] = 2 And ($g_aiCurrentSiegeMachines[$eSiegeBattleBlimp] > 0 Or $g_aiCurrentCCSiegeMachines[$eSiegeBattleBlimp] > 0)) Or _
+			($g_aiAttackUseSiege[$g_iMatchMode] = 3 And ($g_aiCurrentSiegeMachines[$eSiegeStoneSlammer] > 0 Or $g_aiCurrentCCSiegeMachines[$eSiegeStoneSlammer] > 0)) Or _
 			$g_aiAttackUseSiege[$g_iMatchMode] = 0) Then
 			$bcheckSiege = True
 		EndIf
@@ -127,7 +128,7 @@ EndFunc   ;==>IsSearchModeActiveMini
 ; Return values .: Returns True if Wait for spells is enabled for any enabled attack mode, false if not
 ; Author ........: MonkeyHunter (06-2016)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -152,7 +153,7 @@ EndFunc   ;==>IsWaitforSpellsActive
 ; Return values .: Returns True if Wait for any Hero is enabled for any enabled attack mode, false if not
 ; Author ........: MonkeyHunter (06-2016)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -177,7 +178,7 @@ EndFunc   ;==>IsWaitforHeroesActive
 ; Return values .: Returns True if Wait for any Siege is enabled for any enabled attack mode, false if not
 ; Author ........: ProMac (07-2018)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki

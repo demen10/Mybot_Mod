@@ -17,6 +17,7 @@ Func SwitchAccountVariablesReload($sType = "Load")
 
 	; Empty arrays
 	Local $aiZero[8] = [0, 0, 0, 0, 0, 0, 0, 0], $aiTrue[8] = [1, 1, 1, 1, 1, 1, 1, 1]
+	Local $aiZero83[8][3] = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
 	Local $aiZero84[8][4] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 	Local $aiZero86[8][6] = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 	Local $asEmpty[8] = ["", "", "", "", "", "", "", ""]
@@ -47,8 +48,14 @@ Func SwitchAccountVariablesReload($sType = "Load")
 	Static $aiSmartZapGain = $aiZero, $aiNumEQSpellsUsed = $aiZero, $aiNumLSpellsUsed = $aiZero ; smart zap
 
 	; Lab time
-	Static $asLabUpgradeTime = $asEmpty, $aiLabStatus = $aiZero
-
+	Static $asLabUpgradeTime = $asEmpty, $aiLabStatus = $aiZero, $aiLabElixirCost = $aiZero, $aiLabDElixirCost = $aiZero
+	Static $asStarLabUpgradeTime = $asEmpty
+	
+	; Hero State
+	Static $aiHeroAvailable = $aiZero
+	Static $aiHeroUpgradingBit = $aiZero
+	Static $aiHeroUpgrading = $aiZero83
+	
 	; First time switch account
 	Switch $sType
 		Case "Reset"
@@ -109,7 +116,15 @@ Func SwitchAccountVariablesReload($sType = "Load")
 
 			; Lab time
 			$asLabUpgradeTime = $asEmpty
+			$aiLabElixirCost = $aiZero
+			$aiLabDElixirCost = $aiZero
 			$aiLabStatus = $aiZero
+			$asStarLabUpgradeTime = $asEmpty
+
+			; Hero State
+			$aiHeroAvailable = $aiZero
+			$aiHeroUpgradingBit = $aiZero
+			$aiHeroUpgrading = $aiZero83
 
 		Case "Save"
 			$aiFirstRun[$g_iCurAccount] = $g_iFirstRun
@@ -166,6 +181,8 @@ Func SwitchAccountVariablesReload($sType = "Load")
 
 			; Lab time
 			$asLabUpgradeTime[$g_iCurAccount] = $g_sLabUpgradeTime
+			$aiLabElixirCost[$g_iCurAccount] = $g_iLaboratoryElixirCost
+			$aiLabDElixirCost[$g_iCurAccount] = $g_iLaboratoryDElixirCost
 			If GUICtrlGetState($g_hPicLabGreen) = $GUI_ENABLE + $GUI_SHOW Then
 				$aiLabStatus[$g_iCurAccount] = 1
 			ElseIf GUICtrlGetState($g_hPicLabRed) = $GUI_ENABLE + $GUI_SHOW Then
@@ -173,6 +190,14 @@ Func SwitchAccountVariablesReload($sType = "Load")
 			Else
 				$aiLabStatus[$g_iCurAccount] = 0
 			EndIf
+			$asStarLabUpgradeTime[$g_iCurAccount] = $g_sStarLabUpgradeTime
+			
+			; Hero State
+			$aiHeroAvailable[$g_iCurAccount] = $g_iHeroAvailable
+			$aiHeroUpgradingBit[$g_iCurAccount] = $g_iHeroUpgradingBit
+			For $i = 0 To 2
+				$aiHeroUpgrading[$g_iCurAccount][$i] = $g_iHeroUpgrading[$i]
+			Next
 
 		Case "Load"
 			$g_iFirstRun = $aiFirstRun[$g_iCurAccount]
@@ -229,22 +254,26 @@ Func SwitchAccountVariablesReload($sType = "Load")
 
 			; Lab time
 			$g_sLabUpgradeTime = $asLabUpgradeTime[$g_iCurAccount]
+			GUICtrlSetData($g_hLbLLabTime, "")
+			$g_iLaboratoryElixirCost = $aiLabElixirCost[$g_iCurAccount]
+			$g_iLaboratoryDElixirCost = $aiLabDElixirCost[$g_iCurAccount]
 			Local $Counter = 0
 			For $i = $g_hPicLabGray To $g_hPicLabRed
 				GUICtrlSetState($i, $GUI_HIDE)
 				If $aiLabStatus[$g_iCurAccount] = $Counter Then GUICtrlSetState($i, $GUI_SHOW)
 				$Counter += 1
 			Next
+			$g_sStarLabUpgradeTime = $asStarLabUpgradeTime[$g_iCurAccount]
+
+			; Hero State
+			$g_iHeroAvailable = $aiHeroAvailable[$g_iCurAccount]
+			$g_iHeroUpgradingBit = $aiHeroUpgradingBit[$g_iCurAccount]
+			For $i = 0 To 2
+				$g_iHeroUpgrading[$i] = $aiHeroUpgrading[$g_iCurAccount][$i]
+			Next
 
 			ResetVariables("donated") ; reset for new account
 			$g_aiAttackedCountSwitch[$g_iCurAccount] = $aiAttackedCount[$g_iCurAccount]
-
-			; Reseting Hero Status
-			$g_iHeroAvailable = $eHeroNone
-			$g_iHeroUpgradingBit = $eHeroNone
-			For $i = 0 To 2
-				$g_iHeroUpgrading[$i] = 0
-			Next
 
 			; Reset the log
 			$g_hLogFile = 0
@@ -258,6 +287,24 @@ Func SwitchAccountVariablesReload($sType = "Load")
 				GUICtrlSetData($g_ahLblHourlyStatsGoldAcc[$i], _NumberFormat(Round($aiStatsTotalGain[$i][$eLootGold] / (Int(__TimerDiff($g_hTimerSinceStarted) + $g_iTimePassed)) * 3600)) & "k / h")
 				GUICtrlSetData($g_ahLblHourlyStatsElixirAcc[$i], _NumberFormat(Round($aiStatsTotalGain[$i][$eLootElixir] / (Int(__TimerDiff($g_hTimerSinceStarted) + $g_iTimePassed)) * 3600)) & "k / h")
 				GUICtrlSetData($g_ahLblHourlyStatsDarkAcc[$i], _NumberFormat(Round($aiStatsTotalGain[$i][$eLootDarkElixir] / (Int(__TimerDiff($g_hTimerSinceStarted) + $g_iTimePassed)) * 3600 * 1000)) & " / h")
+			Next
+
+		Case "SetTime"
+			Local $day, $hour, $min, $sec
+			For $i = 0 To $g_iTotalAcc
+				If _DateIsValid($asLabUpgradeTime[$i]) Then
+					Local $iLabTime = _DateDiff("s", _NowCalc(), $asLabUpgradeTime[$i]) * 1000
+					If $iLabTime > 0 Then
+						_TicksToDay($iLabTime, $day, $hour, $min, $sec)
+						GUICtrlSetData($g_ahLblLabTime[$i], $day > 0 ? StringFormat("%2ud %02i:%02i'", $day, $hour, $min) : StringFormat("%02i:%02i:%02i", $hour, $min, $sec))
+						GUICtrlSetColor($g_ahLblLabTime[$i], $day > 0 ? $COLOR_GREEN : $COLOR_ORANGE)
+					Else
+						GUICtrlSetData($g_ahLblLabTime[$i], "")
+						$asLabUpgradeTime[$i] = ""
+					EndIf
+				Else
+					GUICtrlSetData($g_ahLblLabTime[$i], "")
+				EndIf
 			Next
 
 	EndSwitch

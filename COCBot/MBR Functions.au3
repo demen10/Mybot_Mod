@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........:
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -18,6 +18,8 @@
 #include "functions\Other\StopWatch.au3"
 ;#include "functions\Other\Synchronization.au3" ; now included in LaunchConsole.au3
 #include "functions\Other\OnAutoItErrorRegisterBot.au3"
+#Include "functions\Other\Json.au3"
+
 
 #include "functions\Attack\AttackReport.au3"
 #include "functions\Attack\AttackStats.au3"
@@ -27,9 +29,9 @@
 #include "functions\Attack\PrepareAttack.au3"
 #include "functions\Attack\ReturnHome.au3"
 #include "functions\Attack\Unbreakable.au3"
+#include "functions\Attack\GetAttackBar.au3"
 
 #include "functions\Attack\Attack Algorithms\algorithm_AllTroops.au3"
-;#include "functions\Attack\Attack Algorithms\algorithm_Barch.au3"
 #include "functions\Attack\Attack Algorithms\algorithmTH.au3"
 #include "functions\Attack\Attack Algorithms\THAttackTypes.au3"
 #include "functions\Attack\Attack Algorithms\AttackFromCSV.au3"
@@ -79,9 +81,7 @@
 #include "functions\Attack\RedArea\GetOffestPixelRedArea2.au3"
 #include "functions\Attack\RedArea\GetPixelDropTroop.au3"
 #include "functions\Attack\RedArea\GetPixelSide.au3"
-;#include "functions\Attack\RedArea\GetVectorPixelAverage.au3"
 #include "functions\Attack\RedArea\GetVectorPixelOnEachSide.au3"
-;#include "functions\Attack\RedArea\GetVectorPixelToDeploy.au3"
 #include "functions\Attack\RedArea\PointInPoly.au3"
 
 #include "functions\Attack\Troops\CheckHeroesHealth.au3"
@@ -90,10 +90,8 @@
 #include "functions\Attack\Troops\DropOnEdge.au3"
 #include "functions\Attack\Troops\DropOnEdges.au3"
 #include "functions\Attack\Troops\DropOrderTroops.au3"
-#include "functions\Attack\Troops\GetXPosOfArmySlot.au3"
 #include "functions\Attack\Troops\GetSlotIndexFromXPos.au3"
 #include "functions\Attack\Troops\LaunchTroop.au3"
-#include "functions\Attack\Troops\NameOfTroop.au3"
 #include "functions\Attack\Troops\OldDropTroop.au3"
 #include "functions\Attack\Troops\ReadTroopQuantity.au3"
 #include "functions\Attack\Troops\SelectDropTroop.au3"
@@ -129,7 +127,7 @@
 #include "functions\CreateArmy\getArmySiegeMachines\getArmySiegeMachines.au3"
 
 #include "functions\CreateArmy\getArmyCCTroops\getArmyCCStatus.au3"
-#include "functions\CreateArmy\getArmyCCTroops\getArmyCCTroops.au3" ;for check & remove unwanted CC Troops
+#include "functions\CreateArmy\getArmyCCTroops\getArmyCCTroops.au3"
 
 #include "functions\CreateArmy\getArmyCCSpells\getArmyCCSpellCapacity.au3"
 #include "functions\CreateArmy\getArmyCCSpells\getArmyCCSpell.au3"
@@ -143,7 +141,6 @@
 #include "functions\Image Search\imglocAuxiliary.au3"
 #include "functions\Image Search\imglocCheckWall.au3"
 #include "functions\Image Search\imglocTHSearch.au3"
-#include "functions\Image Search\imglocAttackBar.au3"
 #include "functions\Image Search\QuickMIS.au3"
 
 #include "functions\Main Screen\checkMainScreen.au3"
@@ -176,6 +173,7 @@
 #include "functions\Android\AndroidEmbed.au3"
 
 #include "functions\Other\WerFaultClose.au3"
+#include "functions\Other\TcpTable.au3"
 #include "functions\Other\_NumberFormat.au3"
 #include "functions\Other\_PadStringCenter.au3"
 #include "functions\Other\_ProcessSuspendResume2.au3"
@@ -296,9 +294,12 @@
 #include "functions\Village\BuilderBase\StartClockTowerBoost.au3"
 #include "functions\Village\BuilderBase\BuilderBaseReport.au3"
 #include "functions\Village\BuilderBase\SuggestedUpgrades.au3"
+#include "functions\Village\BuilderBase\CleanBBYard.au3"
+#include "functions\Village\BuilderBase\StarLaboratory.au3"
 
 #include "functions\Other\Api.au3"
 #include "functions\Other\ApiClient.au3"
+#include "functions\Other\ForumAuthentication.au3"
 
 ; moved to the end to avoid any global declare issues
 #include "functions\Config\profileFunctions.au3"

@@ -7,7 +7,7 @@
 ; Return values .: None
 ; Author ........: MonkeyHunter (05-2016)
 ; Modified ......: MR.ViPER (10-2016), TheRevenor (10-2016), MR.ViPER (12-2016), CodeSlinger69 (01-2018)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -16,16 +16,18 @@
 #include-once
 
 Func SmartWait4Train($iTestSeconds = Default)
+	If Not $g_bRunState Then Return
+	
 	Static $ichkCloseWaitSpell = 0, $ichkCloseWaitHero = 0
 	Local $bTest = ($iTestSeconds <> Default)
-
+	
 	If $g_bDebugSetlogTrain Or $g_bDebugSetlog Then SetLog("Begin SmartWait4Train:", $COLOR_DEBUG1)
 
 	If Not $g_bCloseWhileTrainingEnable Then Return ; Skip if not enabled
 
 	Local $iExitCount = 0
 	If _Sleep($DELAYSMARTWAIT) Then Return ; first start 500ms so no false "**Main Window FAIL**" pops up
-	While IsMainPage(1) = False ; check & wait for main page to ensure can read shield information properly
+	While IsMainPage(2) = False ; check & wait for main page to ensure can read shield information properly
 		If _Sleep($DELAYIDLE1) Then Return
 		$iExitCount += 1
 		If $iExitCount > 25 Then ; 5 seconds before have error?
@@ -147,13 +149,12 @@ Func SmartWait4Train($iTestSeconds = Default)
 				Local $iHeroIdx = $pTroopType - $eKing
 				For $pMatchMode = $DB To $LB ; check only DB and LB (TS has no wait option!)
 					If $g_bDebugSetlogTrain Or $g_bDebugSetlog Then
-						SetLog("$pTroopType: " & NameOfTroop($pTroopType) & ", $pMatchMode: " & $g_asModeText[$pMatchMode], $COLOR_DEBUG)
-						SetLog("TroopToBeUsed: " & IsSpecialTroopToBeUsed($pMatchMode, $pTroopType) & ", Hero Wait Status= " & IsSearchModeActiveMini($pMatchMode) & " & " & IsSpecialTroopToBeUsed($pMatchMode, $pTroopType) & " & " & ($g_iHeroUpgrading[$iHeroIdx] <> 1) & " & " & ($g_iHeroWaitAttackNoBit[$pMatchMode][$iHeroIdx] = 1), $COLOR_DEBUG)
+						SetLog("$pTroopType: " & GetTroopName($pTroopType) & ", $pMatchMode: " & $g_asModeText[$pMatchMode], $COLOR_DEBUG)
+						SetLog("TroopToBeUsed: " & IsUnitUsed($pMatchMode, $pTroopType) & ", Hero Wait Status= " & IsSearchModeActiveMini($pMatchMode) & " & " & IsUnitUsed($pMatchMode, $pTroopType) & " & " & ($g_iHeroUpgrading[$iHeroIdx] <> 1) & " & " & ($g_iHeroWaitAttackNoBit[$pMatchMode][$iHeroIdx] = 1), $COLOR_DEBUG)
 						SetLog("$g_aiAttackUseHeroes[" & $pMatchMode & "]= " & $g_aiAttackUseHeroes[$pMatchMode] & ", $g_aiSearchHeroWaitEnable[" & $pMatchMode & "]= " & $g_aiSearchHeroWaitEnable[$pMatchMode] & ", $g_iHeroUpgradingBit=" & $g_iHeroUpgradingBit, $COLOR_DEBUG)
 					EndIf
 					$iActiveHero = -1
-					;If IsSpecialTroopToBeUsed($pMatchMode, $pTroopType) And BitAND($g_aiAttackUseHeroes[$pMatchMode], $g_aiSearchHeroWaitEnable[$pMatchMode]) = $g_aiAttackUseHeroes[$pMatchMode] Then ; check if Hero enabled to wait
-					If IsSearchModeActiveMini($pMatchMode) And IsSpecialTroopToBeUsed($pMatchMode, $pTroopType) And $g_iHeroUpgrading[$iHeroIdx] <> 1 And $g_iHeroWaitAttackNoBit[$pMatchMode][$iHeroIdx] = 1 Then
+					If IsSearchModeActiveMini($pMatchMode) And IsUnitUsed($pMatchMode, $pTroopType) And $g_iHeroUpgrading[$iHeroIdx] <> 1 And $g_iHeroWaitAttackNoBit[$pMatchMode][$iHeroIdx] = 1 Then
 						$iActiveHero = $iHeroIdx ; compute array offset to active hero
 					EndIf
 					If $iActiveHero <> -1 And $aHeroResult[$iActiveHero] > 0 Then ; valid time?
@@ -165,7 +166,7 @@ Func SmartWait4Train($iTestSeconds = Default)
 						EndIf
 						$iTrainWaitCloseFlag = BitOR($iTrainWaitCloseFlag, $TRAINWAIT_HERO)
 						If $g_bDebugSetlogTrain Or $g_bDebugSetlog Then
-							SetLog("Wait enabled: " & NameOfTroop($pTroopType) & ":" & $g_asModeText[$pMatchMode] & ", $iTrainWaitCloseFlag:" & $iTrainWaitCloseFlag & ", Hero Time:" & $aHeroResult[$iActiveHero] & ", Wait Time: " & StringFormat("%.2f", $g_aiTimeTrain[2]), $COLOR_DEBUG)
+							SetLog("Wait enabled: " & GetTroopName($pTroopType) & ":" & $g_asModeText[$pMatchMode] & ", $iTrainWaitCloseFlag:" & $iTrainWaitCloseFlag & ", Hero Time:" & $aHeroResult[$iActiveHero] & ", Wait Time: " & StringFormat("%.2f", $g_aiTimeTrain[2]), $COLOR_DEBUG)
 						EndIf
 					EndIf
 				Next

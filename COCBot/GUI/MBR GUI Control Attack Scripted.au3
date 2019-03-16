@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........: MyBot.run team
 ; Modified ......: CodeSlinger69 (2017), MMHK (01-2008)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -509,6 +509,7 @@ Func AttackNow()
 	Local $tempSieges = $g_aiCurrentSiegeMachines
 	$g_aiCurrentSiegeMachines[$eSiegeWallWrecker] = 1
 	$g_aiCurrentSiegeMachines[$eSiegeBattleBlimp] = 1
+	$g_aiCurrentSiegeMachines[$eSiegeStoneSlammer] = 1
 	$g_aiAttackAlgorithm[$LB] = 1										; Select Scripted Attack
 	$g_sAttackScrScriptName[$LB] = GuiCtrlRead($g_hCmbScriptNameAB)		; Select Scripted Attack File From The Combo Box, Cos it wasn't refreshing until pressing Start button
 	$g_iMatchMode = $LB													; Select Live Base As Attack Type

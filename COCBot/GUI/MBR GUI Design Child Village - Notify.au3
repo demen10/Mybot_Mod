@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........:
 ; Modified ......: CodeSlinger69 (2017)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -202,7 +202,7 @@ Func CreatePushBulletTelegramSubTab()
 	$y += 15
 	$x = 15
 		$g_lblHepNotify = GUICtrlCreateLabel(GetTranslatedFileIni("MBR GUI Design Child Village - Notify", "LblNotifyHelp", "Help ?"), $x + 310, $y , 100, 24, $SS_RIGHT)
-			GUICtrlSetOnEvent($g_lblHepNotify, "ShowCommandLineHelp")
+			GUICtrlSetOnEvent($g_lblHepNotify, "ShowControlHelp")
 			GUICtrlSetCursor(-1, 0)
 			GUICtrlSetFont(-1, 8.5, $FW_BOLD)
 			_GUICtrlSetTip(-1, GetTranslatedFileIni("MBR GUI Design Child Village - Notify", "LblNotifyHelp_Info_01", "Click here to get Help about Notify Remote commands to Telegram"))

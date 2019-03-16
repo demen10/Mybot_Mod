@@ -19,7 +19,7 @@
 ; Return values .: None
 ; Author ........: Sardo (2016)
 ; Modified ......: MonkeyHunter (03-2017)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -101,48 +101,51 @@ Func DropTroopFromINI($vectors, $indexStart, $indexEnd, $indexArray, $qtaMin, $q
 		debugAttackCSV("New troop position: " & $troopPosition)
 	EndIf
 
-	Local $usespell = True
+	Local $bUseSpell = True
 	Switch $iTroopIndex
 		Case $eLSpell
-			If $g_abAttackUseLightSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseLightSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $eHSpell
-			If $g_abAttackUseHealSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseHealSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $eRSpell
-			If $g_abAttackUseRageSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseRageSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $eJSpell
-			If $g_abAttackUseJumpSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseJumpSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $eFSpell
-			If $g_abAttackUseFreezeSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseFreezeSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $eCSpell
-			If $g_abAttackUseCloneSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseCloneSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $ePSpell
-			If $g_abAttackUsePoisonSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUsePoisonSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $eESpell
-			If $g_abAttackUseEarthquakeSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseEarthquakeSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $eHaSpell
-			If $g_abAttackUseHasteSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseHasteSpell[$g_iMatchMode] Then $bUseSpell = False
 		Case $eSkSpell
-			If $g_abAttackUseSkeletonSpell[$g_iMatchMode] = False Then $usespell = False
+			If Not $g_abAttackUseSkeletonSpell[$g_iMatchMode] Then $bUseSpell = False
+		Case $eBtSpell
+			If Not $g_abAttackUseBatSpell[$g_iMatchMode] Then $bUseSpell = False
 	EndSwitch
 
-	If $troopPosition = -1 Or $usespell = False Then
+	If $troopPosition = -1 Or Not $bUseSpell Then
 
-		If $usespell = True Then
-			SetLog("No " & NameOfTroop($iTroopIndex) & "  found in your attack troops list")
-			debugAttackCSV("No " & NameOfTroop($iTroopIndex) & " found in your attack troops list")
+		If $bUseSpell Then
+			SetLog("No " & GetTroopName($iTroopIndex) & " found in your attack troops list")
+			debugAttackCSV("No " & GetTroopName($iTroopIndex) & " found in your attack troops list")
 		Else
-			If $g_bDebugSetlog Then SetDebugLog("Discard use " & NameOfTroop($iTroopIndex), $COLOR_DEBUG)
+			If $g_bDebugSetlog Then SetDebugLog("Discard use " & GetTroopName($iTroopIndex), $COLOR_DEBUG)
 		EndIf
 
 	Else
 
 		;Local $SuspendMode = SuspendAndroid()
 
-		If $g_iCSVLastTroopPositionDropTroopFromINI <> $troopPosition Then
+		If $g_iCSVLastTroopPositionDropTroopFromINI <> $troopSlotConst Then
 			ReleaseClicks()
 			SelectDropTroop($troopPosition) ; select the troop...
-			$g_iCSVLastTroopPositionDropTroopFromINI = $troopPosition
+			$g_iCSVLastTroopPositionDropTroopFromINI = $troopSlotConst
 			ReleaseClicks()
+			KeepClicks()
 		EndIf
 		;drop
 		For $i = $indexStart To $indexEnd
@@ -161,7 +164,7 @@ Func DropTroopFromINI($vectors, $indexStart, $indexEnd, $indexArray, $qtaMin, $q
 				Else
 					$delayDrop = $delayDropMin
 				EndIf
-				debugAttackCSV(">> delay change drop point: " & $delayDrop)
+				debugAttackCSV("- delay change drop point: " & $delayDrop)
 			EndIf
 
 			For $j = 1 To $numbersOfVectors
@@ -181,7 +184,7 @@ Func DropTroopFromINI($vectors, $indexStart, $indexEnd, $indexArray, $qtaMin, $q
 					EndIf
 
 					Switch $iTroopIndex
-						Case $eBarb To $eBowl ; drop normal troops
+						Case $eBarb To $eIceG ; drop normal troops
 							If $debug = True Then
 								SetLog("AttackClick( " & $pixel[0] & ", " & $pixel[1] & " , " & $qty2 & ", " & $delayPoint & ",#0666)")
 							Else
@@ -205,13 +208,13 @@ Func DropTroopFromINI($vectors, $indexStart, $indexEnd, $indexArray, $qtaMin, $q
 							Else
 								dropHeroes($pixel[0], $pixel[1], -1, -1, $troopPosition) ; was $g_iWardenSlot, Slot11+
 							EndIf
-						Case $eCastle, $eWallW, $eBattleB
+						Case $eCastle, $eWallW, $eBattleB, $eStoneS
 							If $debug = True Then
 								SetLog("dropCC(" & $pixel[0] & ", " & $pixel[1] & ", " & $troopPosition & ")")
 							Else
 								dropCC($pixel[0], $pixel[1], $troopPosition)
 							EndIf
-						Case $eLSpell To $eSkSpell
+						Case $eLSpell To $eBtSpell
 							If $debug = True Then
 								SetLog("Drop Spell AttackClick( " & $pixel[0] & ", " & $pixel[1] & " , " & $qty2 & ", " & $delayPoint & ",#0666)")
 							Else
@@ -242,7 +245,7 @@ Func DropTroopFromINI($vectors, $indexStart, $indexEnd, $indexArray, $qtaMin, $q
 			$sleepafter = Int($sleepafterMin)
 		EndIf
 		If $sleepafter > 0 And IsKeepClicksActive() = False Then
-			debugAttackCSV(">> delay after drop all troops: " & $sleepafter)
+			debugAttackCSV("- delay after drop all troops: " & $sleepafter)
 			If $sleepafter <= 1000 Then ; check SLEEPAFTER value is less than 1 second?
 				If _Sleep($sleepafter) Then Return
 				If $bHeroDrop = True Then ;Check hero but skip Warden if was dropped with sleepafter to short to allow icon update

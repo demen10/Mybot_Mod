@@ -8,7 +8,7 @@
 ; Return values .: None
 ; Author ........: MonkeyHunter (2016-02)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -136,7 +136,7 @@ Func _Date_Difference($sStartDate, Const $sEndDate, Const $iGrain)
 		If $iUnit <> 0 Then
 			$sReturn &= $iUnit & " " & $aType[$i] & ($iUnit > 1 ? "s" : "") & " "
 		EndIf
-		$sStartDate = _DateAdd($aUnit[$i], $iUnit, $sStartDate)
+		$sStartDate = _DateAdd($aUnit[$i], Int($iUnit), $sStartDate)
 	Next
 
 	Return $sReturn

@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........: GkevinOD (2014)
 ; Modified ......: Hervidero (2015), CodeSlinger69 (2017)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -99,13 +99,37 @@ Func cmbABAlgorithm()
 	EndIf
 EndFunc   ;==>cmbABAlgorithm
 
-Func cmbDBSiege()
-	$g_aiAttackUseSiege[$DB] = _GUICtrlComboBox_GetCurSel($g_hcmbDBSiege)
-EndFunc   ;==>cmbDBSiege
+Func chkABWardenAttack()
+	If GUICtrlRead($g_hChkABWardenAttack) = $GUI_CHECKED Then
+		GUICtrlSetState($g_hCmbABWardenMode, $GUI_ENABLE)
+	Else
+		GUICtrlSetState($g_hCmbABWardenMode, $GUI_DISABLE)
+	EndIf
+EndFunc   ;==>chkABWardenAttack
 
-Func cmbABSiege()
-	$g_aiAttackUseSiege[$LB] = _GUICtrlComboBox_GetCurSel($g_hcmbABSiege)
-EndFunc   ;==>cmbABSiege
+Func chkDBWardenAttack()
+	If GUICtrlRead($g_hChkDBWardenAttack) = $GUI_CHECKED Then
+		GUICtrlSetState($g_hCmbDBWardenMode, $GUI_ENABLE)
+	Else
+		GUICtrlSetState($g_hCmbDBWardenMode, $GUI_DISABLE)
+	EndIf
+EndFunc   ;==>chkDBWardenAttack
+
+Func chkABDropCC()
+	If GUICtrlRead($g_hChkABDropCC) = $GUI_CHECKED Then
+		GUICtrlSetState($g_hcmbABSiege, $GUI_ENABLE)
+	Else
+		GUICtrlSetState($g_hcmbABSiege, $GUI_DISABLE)
+	EndIf
+EndFunc   ;==>chkABDropCC
+
+Func chkDBDropCC()
+	If GUICtrlRead($g_hChkDBDropCC) = $GUI_CHECKED Then
+		GUICtrlSetState($g_hcmbDBSiege, $GUI_ENABLE)
+	Else
+		GUICtrlSetState($g_hcmbDBSiege, $GUI_DISABLE)
+	EndIf
+EndFunc   ;==>chkDBDropCC
 
 Func chkAttackNow()
 	If GUICtrlRead($g_hChkAttackNow) = $GUI_CHECKED Then

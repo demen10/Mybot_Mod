@@ -6,7 +6,7 @@
 ; Return values .: True: Successfully switched Bases  -  False: Failed to switch Bases
 ; Author ........: Fliegerfaust (05-2017)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -40,7 +40,7 @@ Func SwitchBetweenBases($bCheckMainScreen = True)
 		If $i = 1 Then
 			For $j = 0 To 6
 				AndroidShield("AndroidOnlyZoomOut") ; Update shield status
-				AndroidZoomOut(False, $j) ; use new ADB zoom-out, just incase forcing a zoomout without images detections
+				AndroidZoomOut($j, Default, ($g_iAndroidZoomoutMode <> 2)) ; use new ADB zoom-out, just incase forcing a zoomout without images detections
 				If Not $g_bRunState Then Return
 				If _sleep(100) Then Return
 			Next

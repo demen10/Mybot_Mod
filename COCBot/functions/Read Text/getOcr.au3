@@ -3,7 +3,7 @@
 ; Description ...: Gets complete value of gold/Elixir/DarkElixir/Trophy/Gem xxx,xxx
 ; Author ........: Didipe (2015)
 ; Modified ......: ProMac (2015), Hervidero (2015-12), MMHK (2016-12), MR.ViPER (2017-4)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -72,14 +72,14 @@ Func getResourcesLootT($x_start, $y_start) ; -> Gets complete value of Trophies 
 EndFunc   ;==>getResourcesLootT
 
 Func getResourcesBonus($x_start, $y_start) ; -> Gets complete value of Gold/Elixir bonus loot in "AttackReport.au3"
-	Return getOcrAndCapture("coc-bonus", $x_start, $y_start, 98, 16, True)
+	Return getOcrAndCapture("coc-bonus", $x_start, $y_start, 98, 20, True)
 EndFunc   ;==>getResourcesBonus
 
 Func getResourcesBonusPerc($x_start, $y_start) ; -> Gets complete value of Bonus % in "AttackReport.au3"
 	Return getOcrAndCapture("coc-bonus", $x_start, $y_start, 48, 16, True)
 EndFunc   ;==>getResourcesBonusPerc
 
-Func getLabUpgrdResourceWht($x_start, $y_start) ; -> Gets complete value of Elixir/DE on the troop buttons, xxx,xxx for "laboratory.au3" when white text
+Func getLabUpgrdResourceWht($x_start, $y_start) ; -> Gets complete value of Elixir/DE on the troop buttons, xxx,xxx for "laboratory.au3" and "starlaboratory.au3" when white text
 	Return getOcrAndCapture("coc-lab-w", $x_start, $y_start, 70, 14, True)
 EndFunc   ;==>getLabUpgrdResourceWht
 
@@ -87,12 +87,16 @@ Func getLabUpgrdResourceRed($x_start, $y_start) ; -> Gets complete value of Elix
 	Return getOcrAndCapture("coc-lab-r", $x_start, $y_start, 70, 14, True)
 EndFunc   ;==>getLabUpgrdResourceRed
 
+Func getStarLabUpgrdResourceRed($x_start, $y_start) ; -> Gets complete value of Elixir on the troop buttons,  xxx,xxx for "starlaboratory.au3" when red text
+	Return getOcrAndCapture("coc-starlab-r", $x_start, $y_start, 70, 14, True)
+EndFunc   ;==>getLabUpgrdResourceRed
+
 Func getBldgUpgradeTime($x_start, $y_start) ; -> Gets complete remain building upgrade time
 	Return getOcrAndCapture("coc-uptime", $x_start, $y_start, 42, 18) ; 42 is enougth xxx : 2 numbers and one letter at max
 EndFunc   ;==>getBldgUpgradeTime
 
 Func getLabUpgradeTime($x_start, $y_start) ; -> Gets complete remain lab upgrade time V2 for Dec2015 update
-	Return getOcrAndCapture("coc-uptime2", $x_start, $y_start, 42, 22) ; 40 is enougth xxx : 2 numbers and one letter at max
+	Return getOcrAndCapture("coc-uptime2", $x_start, $y_start, 68, 22) ; 40 is enougth xxx : 2 numbers and one letter at max
 EndFunc   ;==>getLabUpgradeTime
 
 Func getHeroUpgradeTime($x_start, $y_start) ; -> Gets complete upgrade time for heroes 464, 527 + $g_iMidOffsetY
@@ -112,11 +116,11 @@ Func getProfile($x_start, $y_start) ;  -> Gets Attack Win/Defense Win/Donated/Re
 EndFunc   ;==>getProfile
 
 Func getTroopCountSmall($x_start, $y_start, $bNeedNewCapture = Default) ;  -> Gets troop amount on Attack Screen for non-selected troop kind
-	Return getOcrAndCapture("coc-t-s", $x_start, $y_start, 53, 16, True, Default, $bNeedNewCapture)
+	Return getOcrAndCapture("coc-t-s", $x_start, $y_start, 55, 16, True, Default, $bNeedNewCapture)
 EndFunc   ;==>getTroopCountSmall
 
 Func getTroopCountBig($x_start, $y_start, $bNeedNewCapture = Default) ;  -> Gets troop amount on Attack Screen for selected troop kind
-	Return getOcrAndCapture("coc-t-b", $x_start, $y_start, 53, 17, True, Default, $bNeedNewCapture)
+	Return getOcrAndCapture("coc-t-b", $x_start, $y_start, 55, 17, True, Default, $bNeedNewCapture)
 EndFunc   ;==>getTroopCountBig
 
 Func getTroopsSpellsLevel($x_start, $y_start) ;  -> Gets spell level on Attack Screen for selected spell kind (could be used for troops too)

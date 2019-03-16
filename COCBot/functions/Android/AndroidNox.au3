@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........: Cosote (02-2016)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -219,7 +219,7 @@ Func InitNox($bCheckOnly = False)
 
 		;$g_sAndroidPicturesPath = "/mnt/shell/emulated/0/Download/other/"
 		;$g_sAndroidPicturesPath = "/mnt/shared/Other/"
-		$g_sAndroidPicturesPath = "(/mnt/shared/Other|/mnt/shell/emulated/0/Download/other)"
+		$g_sAndroidPicturesPath = "(/mnt/shared/Other|/mnt/shell/emulated/0/Download/other|/mnt/shell/emulated/0/Others)"
 		$aRegexResult = StringRegExp($__VBoxVMinfo, "Name: 'Other', Host path: '(.*)'.*", $STR_REGEXPARRAYGLOBALMATCH)
 		If Not @error Then
 			$g_bAndroidSharedFolderAvailable = True
@@ -255,6 +255,7 @@ Func InitNox($bCheckOnly = False)
 			If $v >= $v2 Then
 				SetDebugLog("Using Android Config of " & $g_sAndroidEmulator & " " & $__Nox_Config[$i][0])
 				$g_sAppClassInstance = $__Nox_Config[$i][1]
+				$g_bAndroidControlUseParentPos = $__Nox_Config[$i][2]
 				$g_avAndroidAppConfig[$g_iAndroidConfig][3] = $g_sAppClassInstance
 				ExitLoop
 			EndIf
@@ -454,14 +455,19 @@ Func EmbedNox($bEmbed = Default, $hHWndAfter = Default)
 	Next
 
 	If $hToolbar = 0 Then
-		SetDebugLog("EmbedNox(" & $bEmbed & "): toolbar Window not found, list of windows:" & $c, Default, True)
+		SetDebugLog("EmbedNox(" & $bEmbed & "): toolbar Window not found, list of windows:" & $c) ;, Default, True
 		For $i = 1 To UBound($aWin) - 1
 			Local $h = $aWin[$i][0]
 			Local $c = $aWin[$i][1]
-			SetDebugLog("EmbedNox(" & $bEmbed & "): Handle = " & $h & ", Class = " & $c, Default, True)
+			Local $aPos = WinGetPos($h)
+			If UBound($aPos) > 3 Then
+				SetDebugLog("EmbedNox(" & $bEmbed & "): Handle = " & $h & ", Class = " & $c & ", width=" & $aPos[2] & ", height=" & $aPos[3]) ;, Default, True
+			Else
+				SetDebugLog("EmbedNox(" & $bEmbed & "): Handle = " & $h & ", Class = " & $c) ;, Default, True
+			EndIf
 		Next
 	Else
-		SetDebugLog("EmbedNox(" & $bEmbed & "): $hToolbar=" & $hToolbar, Default, True)
+		SetDebugLog("EmbedNox(" & $bEmbed & "): $hToolbar=" & $hToolbar) ;, Default, True
 		If $bEmbed Then
 			WinMove2($hToolbar, "", -1, -1, -1, -1, $HWND_NOTOPMOST, $SWP_HIDEWINDOW, False, False)
 		Else

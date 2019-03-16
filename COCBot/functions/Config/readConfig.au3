@@ -6,7 +6,7 @@
 ; Return values .: NA
 ; Author ........:
 ; Modified ......: CodeSlinger69 (01-2018)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -52,8 +52,9 @@ Func ReadProfileConfig($sIniFile = $g_sProfilePath & "\profile.ini")
 		SetDebugLog("Threading: Using " & $g_iGlobalThreads & " threads shared across all bot instances changed to " & $iValue)
 	EndIf
 
-	$sValue = IniRead($sIniFile, "general", "adb.path", $g_sAndroidAdbPath)
-	If FileExists($sValue) Then $g_sAndroidAdbPath = $sValue
+	; Not used anymore since MBR v7.6.7
+	;$sValue = IniRead($sIniFile, "general", "adb.path", $g_sAndroidAdbPath)
+	;If FileExists($sValue) Then $g_sAndroidAdbPath = $sValue
 
 	Return True
 EndFunc   ;==>ReadProfileConfig
@@ -111,6 +112,9 @@ Func ReadBuildingConfig()
 		IniReadS($g_aiLaboratoryPos[0], $g_sProfileBuildingPath, "upgrade", "LabPosX", -1, "int")
 		IniReadS($g_aiLaboratoryPos[1], $g_sProfileBuildingPath, "upgrade", "LabPosY", -1, "int")
 	EndIf
+
+	IniReadS($g_aiStarLaboratoryPos[0], $g_sProfileBuildingPath, "upgrade", "StarLabPosX", -1, "int")
+	IniReadS($g_aiStarLaboratoryPos[1], $g_sProfileBuildingPath, "upgrade", "StarLabPosY", -1, "int")
 
 	IniReadS($g_aiLastGoodWallPos[0], $g_sProfileBuildingPath, "upgrade", "xLastGoodWallPos", -1, "int")
 	IniReadS($g_aiLastGoodWallPos[1], $g_sProfileBuildingPath, "upgrade", "yLastGoodWallPos", -1, "int")
@@ -400,6 +404,7 @@ Func ReadConfig_600_6()
 	IniReadS($g_iTxtTreasuryDark, $g_sProfileConfigPath, "other", "minTreasurydark", 0, "int")
 
 	IniReadS($g_bChkCollectBuilderBase, $g_sProfileConfigPath, "other", "ChkCollectBuildersBase", False, "Bool")
+	IniReadS($g_bChkCleanBBYard, $g_sProfileConfigPath, "other", "ChkCleanBBYard", False, "Bool")
 	IniReadS($g_bChkStartClockTowerBoost, $g_sProfileConfigPath, "other", "ChkStartClockTowerBoost", False, "Bool")
 	IniReadS($g_bChkCTBoostBlderBz, $g_sProfileConfigPath, "other", "ChkCTBoostBlderBz", False, "Bool")
 	IniReadS($g_iChkBBSuggestedUpgrades, $g_sProfileConfigPath, "other", "ChkBBSuggestedUpgrades", $g_iChkBBSuggestedUpgrades, "Int")
@@ -453,20 +458,23 @@ Func ReadConfig_600_11()
 	For $i = 0 To $eTroopCount - 1
 		$g_aiCCTroopsExpected[$i] = 0
 		If $i < $eSpellCount Then $g_aiCCSpellsExpected[$i] = 0
+		If $i < $eSiegeMachineCount Then $g_aiCCSiegeExpected[$i] = 0
 	Next
 	For $i = 0 To 2
-		$g_aiClanCastleTroopWaitType[$i] = Int(IniRead($g_sProfileConfigPath, "donate", "cmbClanCastleTroop" & $i, "20"))
+		$g_aiClanCastleTroopWaitType[$i] = Int(IniRead($g_sProfileConfigPath, "donate", "cmbClanCastleTroop" & $i, $eTroopCount))
 		$g_aiClanCastleTroopWaitQty[$i] = Int(IniRead($g_sProfileConfigPath, "donate", "txtClanCastleTroop" & $i, "0"))
-		If $g_aiClanCastleTroopWaitType[$i] < $eTroopCount Then ; barb - bowl
+		If $g_aiClanCastleTroopWaitType[$i] < $eTroopCount Then ; barb - IceG
 			$g_aiCCTroopsExpected[$g_aiClanCastleTroopWaitType[$i]] += $g_aiClanCastleTroopWaitQty[$i]
 		EndIf
-	Next
-	For $i = 0 To 1
-		$g_aiClanCastleSpellWaitType[$i] = Int(IniRead($g_sProfileConfigPath, "donate", "cmbClanCastleSpell" & $i, "10"))
-		$g_aiClanCastleSpellWaitQty[$i] = Int(IniRead($g_sProfileConfigPath, "donate", "txtClanCastleSpell" & $i, "0"))
-		If $g_aiClanCastleSpellWaitType[$i] < $eSpellCount Then ; LSpell - SkSpell
-			$g_aiCCSpellsExpected[$g_aiClanCastleSpellWaitType[$i]] += $g_aiClanCastleSpellWaitQty[$i]
+
+		$g_aiClanCastleSpellWaitType[$i] = Int(IniRead($g_sProfileConfigPath, "donate", "cmbClanCastleSpell" & $i, $eSpellCount))
+		If $g_aiClanCastleSpellWaitType[$i] < $eSpellCount Then ; LSpell - BtSpell
+			$g_aiCCSpellsExpected[$g_aiClanCastleSpellWaitType[$i]] += 1
 		EndIf
+
+		If $i > 1 Then ContinueLoop ; Siege has only 2 combobox
+		$g_aiClanCastleSiegeWaitType[$i] = Int(IniRead($g_sProfileConfigPath, "donate", "cmbClanCastleSiege" & $i, $eSiegeMachineCount))
+		If $g_aiClanCastleSiegeWaitType[$i] < $eSiegeMachineCount Then $g_aiCCSiegeExpected[$g_aiClanCastleSiegeWaitType[$i]] = 1 ; WallW - StoneS
 	Next
 
 	$g_abRequestCCHours = StringSplit(IniRead($g_sProfileConfigPath, "planned", "RequestHours", "1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1|1"), "|", $STR_NOCOUNT)
@@ -482,7 +490,7 @@ Func ReadConfig_600_12()
 	IniReadS($g_abChkDonateQueueOnly[1], $g_sProfileConfigPath, "donate", "chkDonateQueueOnly[1]", True, "Bool")
 	For $i = 0 To $eTroopCount - 1 + $g_iCustomDonateConfigs
 		Local $sIniName = ""
-		If $i >= $eTroopBarbarian And $i <= $eTroopBowler Then
+		If $i >= $eTroopBarbarian And $i <= $eTroopIceGolem Then
 			$sIniName = StringReplace($g_asTroopNamesPlural[$i], " ", "")
 		ElseIf $i = $eCustomA Then
 			$sIniName = "CustomA"
@@ -558,6 +566,9 @@ Func ReadConfig_600_12()
 	$g_asTxtDonateTroop[$eTroopBowler] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtDonateBowlers", "bowler|bowl"), "|", @CRLF)
 	$g_asTxtBlacklistTroop[$eTroopBowler] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtBlacklistBowlers", "no bowler|bowl no"), "|", @CRLF)
 
+	$g_asTxtDonateTroop[$eTroopIceGolem] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtDonateIceGolems", "ice golem|ice golems"), "|", @CRLF)
+	$g_asTxtBlacklistTroop[$eTroopIceGolem] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtBlacklistIceGolems", "no ice golem|ice golem no"), "|", @CRLF)
+
 	$g_asTxtDonateTroop[$eCustomA] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtDonateCustomA", "ground support|ground"), "|", @CRLF)
 	$g_asTxtBlacklistTroop[$eCustomA] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtBlacklistCustomA", "no ground|ground no|nonly"), "|", @CRLF)
 
@@ -605,10 +616,14 @@ Func ReadConfig_600_12()
 	$g_asTxtDonateSpell[$eSpellSkeleton] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtDonateSkeletonSpells", "skeleton"), "|", @CRLF)
 	$g_asTxtBlacklistSpell[$eSpellSkeleton] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtBlacklistSkeletonSpells", "no skeleton|skeleton no"), "|", @CRLF)
 
+	$g_asTxtDonateSpell[$eSpellBat] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtDonateBatSpells", "bat"), "|", @CRLF)
+	$g_asTxtBlacklistSpell[$eSpellBat] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtBlacklistBatSpells", "no bat|bat no"), "|", @CRLF)
+
 	For $i = $eSiegeWallWrecker to $eSiegeMachineCount - 1
 		Local $index = $eTroopCount + $g_iCustomDonateConfigs
 		Local $sIniName = $g_asSiegeMachineShortNames[$i]
 		$g_abChkDonateTroop[$index + $i] = (IniRead($g_sProfileConfigPath, "donate", "chkDonate" & $sIniName, "0") = "1")
+		$g_abChkDonateAllTroop[$index + $i] = (IniRead($g_sProfileConfigPath, "donate", "chkDonateAll" & $sIniName, "0") = "1")
 	Next
 
 	$g_asTxtDonateTroop[$eTroopCount + $g_iCustomDonateConfigs + $eSiegeWallWrecker] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtDonateWallW", "Wrecker|siege"), "|", @CRLF)
@@ -616,6 +631,9 @@ Func ReadConfig_600_12()
 
 	$g_asTxtDonateTroop[$eTroopCount + $g_iCustomDonateConfigs + $eSiegeBattleBlimp] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtDonateBattleB", "Blimp|siege"), "|", @CRLF)
 	$g_asTxtBlacklistTroop[$eTroopCount + $g_iCustomDonateConfigs + $eSiegeBattleBlimp] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtBlacklistBattleB", "no Blimp|siege no"), "|", @CRLF)
+
+	$g_asTxtDonateTroop[$eTroopCount + $g_iCustomDonateConfigs + $eSiegeStoneSlammer] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtDonateStoneS", "Slammer|siege"), "|", @CRLF)
+	$g_asTxtBlacklistTroop[$eTroopCount + $g_iCustomDonateConfigs + $eSiegeStoneSlammer] = StringReplace(IniRead($g_sProfileConfigPath, "donate", "txtBlacklistStoneS", "no Slammer|siege no"), "|", @CRLF)
 
 
 	$g_aiDonateCustomTrpNumA[0][0] = Int(IniRead($g_sProfileConfigPath, "donate", "cmbDonateCustomA1", 6))
@@ -669,7 +687,10 @@ EndFunc   ;==>ReadConfig_600_13
 Func ReadConfig_600_14()
 	IniReadS($g_bAutoLabUpgradeEnable, $g_sProfileBuildingPath, "upgrade", "upgradetroops", False, "Bool")
 	IniReadS($g_iCmbLaboratory, $g_sProfileBuildingPath, "upgrade", "upgradetroopname", 0, "int")
-	$g_sLabUpgradeTime = IniRead($g_sProfileBuildingPath, "upgrade", "upgradelabtime", "")
+	IniReadS($g_iLaboratoryElixirCost, $g_sProfileBuildingPath, "upgrade", "upgradelabelexircost", 0, "int")
+	IniReadS($g_iLaboratoryDElixirCost, $g_sProfileBuildingPath, "upgrade", "upgradelabdelexircost", 0, "int")
+	IniReadS($g_bAutoStarLabUpgradeEnable, $g_sProfileBuildingPath, "upgrade", "upgradestartroops", False, "Bool")
+	IniReadS($g_iCmbStarLaboratory, $g_sProfileBuildingPath, "upgrade", "upgradestartroopname", 0, "int")
 EndFunc   ;==>ReadConfig_600_14
 
 Func ReadConfig_600_15()
@@ -690,7 +711,7 @@ EndFunc   ;==>ReadConfig_600_16
 
 Func ReadConfig_auto()
 	; Auto Upgrade
-	IniReadS($g_iChkAutoUpgrade, $g_sProfileConfigPath, "Auto Upgrade", "ChkAutoUpgrade", 0, "int")
+	IniReadS($g_bAutoUpgradeEnabled, $g_sProfileConfigPath, "Auto Upgrade", "AutoUpgradeEnabled", False, "Bool")
 	For $i = 0 To 12
 		IniReadS($g_iChkUpgradesToIgnore[$i], $g_sProfileConfigPath, "Auto Upgrade", "ChkUpgradesToIgnore[" & $i & "]", $g_iChkUpgradesToIgnore[$i], "int")
 	Next
@@ -978,6 +999,7 @@ Func ReadConfig_600_29_DB()
 	IniReadS($g_abAttackUseHasteSpell[$DB], $g_sProfileConfigPath, "attack", "DBHasteSpell", False, "Bool")
 	IniReadS($g_abAttackUseCloneSpell[$DB], $g_sProfileConfigPath, "attack", "DBCloneSpell", False, "Bool")
 	IniReadS($g_abAttackUseSkeletonSpell[$DB], $g_sProfileConfigPath, "attack", "DBSkeletonSpell", False, "Bool")
+	IniReadS($g_abAttackUseBatSpell[$DB], $g_sProfileConfigPath, "attack", "DBBatSpell", False, "Bool")
 	IniReadS($g_bTHSnipeBeforeEnable[$DB], $g_sProfileConfigPath, "attack", "THSnipeBeforeDBEnable", False, "Bool")
 	IniReadS($g_iTHSnipeBeforeTiles[$DB], $g_sProfileConfigPath, "attack", "THSnipeBeforeDBTiles", 0, "int")
 	IniReadS($g_iTHSnipeBeforeScript[$DB], $g_sProfileConfigPath, "attack", "THSnipeBeforeDBScript", "bam")
@@ -1032,7 +1054,8 @@ Func ReadConfig_600_29_DB()
 	IniReadS($g_iMilkFarmForceToleranceBoosted, $g_sProfileConfigPath, "MilkingAttack", "MilkFarmForcetoleranceboosted", 60, "int")
 	IniReadS($g_iMilkFarmForceToleranceDestroyed, $g_sProfileConfigPath, "MilkingAttack", "MilkFarmForcetolerancedestroyed", 60, "int")
 
-	IniReadS($g_aiAttackUseSiege[$DB], $g_sProfileConfigPath, "attack", "DBAtkUseSiege", 0, "int")
+	IniReadS($g_aiAttackUseWardenMode[$DB], $g_sProfileConfigPath, "attack", "DBAtkUseWardenMode", 2, "int")
+	IniReadS($g_aiAttackUseSiege[$DB], $g_sProfileConfigPath, "attack", "DBAtkUseSiege", 5, "int")
 
 	; <><><><> Attack Plan / Search & Attack / Deadbase / Attack / SmartFarm <><><><>
 	IniReadS($g_iTxtInsidePercentage, $g_sProfileConfigPath, "SmartFarm", "InsidePercentage", 65, "int")
@@ -1061,6 +1084,7 @@ Func ReadConfig_600_29_LB()
 	IniReadS($g_abAttackUseHasteSpell[$LB], $g_sProfileConfigPath, "attack", "ABHasteSpell", False, "Bool")
 	IniReadS($g_abAttackUseCloneSpell[$LB], $g_sProfileConfigPath, "attack", "ABCloneSpell", False, "Bool")
 	IniReadS($g_abAttackUseSkeletonSpell[$LB], $g_sProfileConfigPath, "attack", "ABSkeletonSpell", False, "Bool")
+	IniReadS($g_abAttackUseBatSpell[$LB], $g_sProfileConfigPath, "attack", "ABBatSpell", False, "Bool")
 	IniReadS($g_bTHSnipeBeforeEnable[$LB], $g_sProfileConfigPath, "attack", "THSnipeBeforeLBEnable", False, "Bool")
 	IniReadS($g_iTHSnipeBeforeTiles[$LB], $g_sProfileConfigPath, "attack", "THSnipeBeforeLBTiles", 0, "int")
 	IniReadS($g_iTHSnipeBeforeScript[$LB], $g_sProfileConfigPath, "attack", "THSnipeBeforeLBScript", "bam")
@@ -1080,7 +1104,8 @@ Func ReadConfig_600_29_LB()
 	IniReadS($g_aiAttackScrDroplineEdge[$LB], $g_sProfileConfigPath, "attack", "DroplineEdgeAB", $g_aiAttackScrDroplineEdge[$LB], "Int")
 	IniReadS($g_sAttackScrScriptName[$LB], $g_sProfileConfigPath, "attack", "ScriptAB", "Barch four fingers")
 
-	IniReadS($g_aiAttackUseSiege[$LB], $g_sProfileConfigPath, "attack", "ABAtkUseSiege", 0, "int")
+	IniReadS($g_aiAttackUseWardenMode[$LB], $g_sProfileConfigPath, "attack", "ABAtkUseWardenMode", 2, "int")
+	IniReadS($g_aiAttackUseSiege[$LB], $g_sProfileConfigPath, "attack", "ABAtkUseSiege", 5, "int")
 EndFunc   ;==>ReadConfig_600_29_LB
 
 Func ReadConfig_600_29_TS()
@@ -1166,10 +1191,10 @@ EndFunc   ;==>ReadConfig_600_30_TS
 Func ReadConfig_600_31()
 	; <><><><> Attack Plan / Search & Attack / Deadbase / Collectors <><><><>
 	$g_abCollectorLevelEnabled[6] = 0
-	For $i = 7 To 12
+	For $i = 7 To 13
 		IniReadS($g_abCollectorLevelEnabled[$i], $g_sProfileConfigPath, "collectors", "lvl" & $i & "Enabled", True, "Bool")
 	Next
-	For $i = 6 To 12
+	For $i = 6 To 13
 		IniReadS($g_aiCollectorLevelFill[$i], $g_sProfileConfigPath, "collectors", "lvl" & $i & "fill", 0, "int")
 		If $g_aiCollectorLevelFill[$i] > 1 Then $g_aiCollectorLevelFill[$i] = 1
 	Next

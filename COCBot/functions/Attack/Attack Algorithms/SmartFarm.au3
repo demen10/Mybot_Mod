@@ -225,7 +225,7 @@ Func SmartFarmDetection($txtBuildings = "Mines")
 				$sdirectory = @ScriptDir & "\imgxml\Storages\GoldMines"
 			EndIf
 			$iMaxReturnPoints = 7
-			$iMaxLevel = 12
+			$iMaxLevel = 13
 		Case "Collectors"
 			If $g_iDetectedImageType = 1 Then
 				$sdirectory = @ScriptDir & "\imgxml\Storages\Collectors_Snow"
@@ -233,13 +233,17 @@ Func SmartFarmDetection($txtBuildings = "Mines")
 				$sdirectory = @ScriptDir & "\imgxml\Storages\Collectors"
 			EndIf
 			$iMaxReturnPoints = 7
-			$iMaxLevel = 12
+			$iMaxLevel = 13
 		Case "Drills"
 			$sdirectory = @ScriptDir & "\imgxml\Storages\Drills"
 			$iMaxReturnPoints = 3
-			$iMaxLevel = 6
+			$iMaxLevel = 7
 		Case "All"
-			$sdirectory = @ScriptDir & "\imgxml\Storages\All"
+			If $g_iDetectedImageType = 1 Then
+				$sdirectory = @ScriptDir & "\imgxml\Storages\All"
+			Else
+				$sdirectory = @ScriptDir & "\imgxml\Storages\All_Snow"
+			EndIf
 			$iMaxReturnPoints = 21
 			$iMaxLevel = 13
 	EndSwitch
@@ -429,11 +433,11 @@ Func DebugImageSmartFarm($THdetails, $aIn, $aOut, $sTime, $BestSideToAttack, $re
 			$tempObbj = StringSplit($aIn[$i][5], "|", $STR_NOCOUNT) ; several detected points
 			For $t = 0 To UBound($tempObbj) - 1
 				$tempObbjs = StringSplit($tempObbj[$t], ",", $STR_NOCOUNT)
-				_GDIPlus_GraphicsDrawRect($hGraphic, $tempObbjs[0], $tempObbjs[1], 5, 5, $hPen2)
+				If UBound($tempObbjs) > 1 Then _GDIPlus_GraphicsDrawRect($hGraphic, $tempObbjs[0], $tempObbjs[1], 5, 5, $hPen2)
 			Next
 		Else
 			$tempObbj = StringSplit($aOut[$i][5], ",", $STR_NOCOUNT)
-			_GDIPlus_GraphicsDrawRect($hGraphic, $tempObbj[0], $tempObbj[1], 5, 5, $hPen2)
+			If UBound($tempObbj) > 1 Then _GDIPlus_GraphicsDrawRect($hGraphic, $tempObbj[0], $tempObbj[1], 5, 5, $hPen2)
 		EndIf
 		$tempObbj = Null
 		$tempObbjs = Null
@@ -448,11 +452,11 @@ Func DebugImageSmartFarm($THdetails, $aIn, $aOut, $sTime, $BestSideToAttack, $re
 			$tempObbj = StringSplit($aOut[$i][5], "|", $STR_NOCOUNT) ; several detected points
 			For $t = 0 To UBound($tempObbj) - 1
 				$tempObbjs = StringSplit($tempObbj[$t], ",", $STR_NOCOUNT)
-				_GDIPlus_GraphicsDrawRect($hGraphic, $tempObbjs[0], $tempObbjs[1], 5, 5, $hPen2)
+				If UBound($tempObbjs) > 1 Then _GDIPlus_GraphicsDrawRect($hGraphic, $tempObbjs[0], $tempObbjs[1], 5, 5, $hPen2)
 			Next
 		Else
 			$tempObbj = StringSplit($aOut[$i][5], ",", $STR_NOCOUNT)
-			_GDIPlus_GraphicsDrawRect($hGraphic, $tempObbj[0], $tempObbj[1], 5, 5, $hPen2)
+			If UBound($tempObbj) > 1 Then _GDIPlus_GraphicsDrawRect($hGraphic, $tempObbj[0], $tempObbj[1], 5, 5, $hPen2)
 		EndIf
 		$tempObbj = Null
 		$tempObbjs = Null
@@ -466,7 +470,7 @@ Func DebugImageSmartFarm($THdetails, $aIn, $aOut, $sTime, $BestSideToAttack, $re
 		$aTEMP = StringSplit($redline[$l], "|", 2)
 		For $i = 0 To UBound($aTEMP) - 1
 			$DecodeEachPoint = StringSplit($aTEMP[$i], ",", 2)
-			_GDIPlus_GraphicsDrawRect($hGraphic, $DecodeEachPoint[0], $DecodeEachPoint[1], 5, 5, $hPen2)
+			If UBound($DecodeEachPoint) > 1 Then _GDIPlus_GraphicsDrawRect($hGraphic, $DecodeEachPoint[0], $DecodeEachPoint[1], 5, 5, $hPen2)
 		Next
 	Next
 
@@ -478,7 +482,7 @@ Func DebugImageSmartFarm($THdetails, $aIn, $aOut, $sTime, $BestSideToAttack, $re
 	_GDIPlus_PenDispose($hPen)
 	_GDIPlus_PenDispose($hPen2)
 	_GDIPlus_GraphicsDispose($hGraphic)
-	Setlog(" » Debug Image saved!")
+	Setlog(" Â» Debug Image saved!")
 
 	; Open the Debug Directory
 	; Run("explorer.exe " & $subDirectory)
@@ -492,6 +496,7 @@ Func AttackSmartFarm($Nside, $SIDESNAMES)
 	SetSlotSpecialTroops()
 
 	Local $nbSides = Null
+	Local $GiantComp = 0
 
 	_CaptureRegion2() ; ensure full screen is captured (not ideal for debugging as clean image was already saved, but...)
 	_GetRedArea()
@@ -515,10 +520,14 @@ Func AttackSmartFarm($Nside, $SIDESNAMES)
 
 	$g_iSidesAttack = $nbSides
 
-	; Reset the deploy Giants points , for 2 points
-	$g_iSlotsGiants = 1
+	; Reset the deploy Giants points , spread along red line
+	$g_iSlotsGiants = 0
 	; Giants quantities
-	Local $GiantComp = $g_aiArmyCompTroops[$eTroopGiant]
+	For $i = 0 To UBound($g_avAttackTroops) - 1
+		If $g_avAttackTroops[$i][0] = $eGiant Then
+			$GiantComp = $g_avAttackTroops[$i][1]
+		EndIf
+	Next
 
 	; Lets select the deploy points according by Giants qunatities & sides
 	; Deploy points : 0 - spreads along the red line , 1 - one deploy point .... X - X deploy points
@@ -527,9 +536,7 @@ Func AttackSmartFarm($Nside, $SIDESNAMES)
 			$g_iSlotsGiants = 2
 		Case Else
 			Switch $nbSides
-				Case 2
-					$g_iSlotsGiants = 2
-				Case 1
+				Case 1 To 2
 					$g_iSlotsGiants = 4
 				Case Else
 					$g_iSlotsGiants = 0
@@ -539,7 +546,7 @@ Func AttackSmartFarm($Nside, $SIDESNAMES)
 	SetDebugLog("Giants : " & $GiantComp & "  , per side: " & ($GiantComp / $nbSides) & " / deploy points per side: " & $g_iSlotsGiants)
 
 	If $g_bCustomDropOrderEnable Then
-		Local $listInfoDeploy[22][5] = [[MatchTroopDropName(0), $nbSides, MatchTroopWaveNb(0), 1, MatchSlotsPerEdge(0)], _
+		Local $listInfoDeploy[23][5] = [[MatchTroopDropName(0), $nbSides, MatchTroopWaveNb(0), 1, MatchSlotsPerEdge(0)], _
 				[MatchTroopDropName(1), $nbSides, MatchTroopWaveNb(1), 1, MatchSlotsPerEdge(1)], _
 				[MatchTroopDropName(2), $nbSides, MatchTroopWaveNb(2), 1, MatchSlotsPerEdge(2)], _
 				[MatchTroopDropName(3), $nbSides, MatchTroopWaveNb(3), 1, MatchSlotsPerEdge(3)], _
@@ -560,9 +567,10 @@ Func AttackSmartFarm($Nside, $SIDESNAMES)
 				[MatchTroopDropName(18), $nbSides, MatchTroopWaveNb(18), 1, MatchSlotsPerEdge(18)], _
 				[MatchTroopDropName(19), $nbSides, MatchTroopWaveNb(19), 1, MatchSlotsPerEdge(19)], _
 				[MatchTroopDropName(20), $nbSides, MatchTroopWaveNb(20), 1, MatchSlotsPerEdge(20)], _
-				[MatchTroopDropName(21), $nbSides, MatchTroopWaveNb(21), 1, MatchSlotsPerEdge(21)]]
+				[MatchTroopDropName(21), $nbSides, MatchTroopWaveNb(21), 1, MatchSlotsPerEdge(21)], _
+				[MatchTroopDropName(22), $nbSides, MatchTroopWaveNb(22), 1, MatchSlotsPerEdge(22)]]
 	Else
-		Local $listInfoDeploy[22][5] = [[$eGole, $nbSides, 1, 1, 2] _
+		Local $listInfoDeploy[23][5] = [[$eGole, $nbSides, 1, 1, 2] _
 				, [$eLava, $nbSides, 1, 1, 2] _
 				, [$eGiant, $nbSides, 1, 1, $g_iSlotsGiants] _
 				, [$eDrag, $nbSides, 1, 1, 0] _
@@ -572,6 +580,7 @@ Func AttackSmartFarm($Nside, $SIDESNAMES)
 				, [$eHogs, $nbSides, 1, 1, 1] _
 				, [$eValk, $nbSides, 1, 1, 0] _
 				, [$eBowl, $nbSides, 1, 1, 0] _
+				, [$eIceG, $nbSides, 1, 1, 0] _
 				, [$eMine, $nbSides, 1, 1, 0] _
 				, [$eEDrag, $nbSides, 1, 1, 0] _
 				, [$eWall, $nbSides, 1, 1, 1] _
@@ -607,7 +616,7 @@ Func AttackSmartFarm($Nside, $SIDESNAMES)
 			If $g_bDebugSetlog Then SetDebugLog("No Wast time... exit, no troops usable left", $COLOR_DEBUG)
 			ExitLoop ;Check remaining quantities
 		EndIf
-		For $i = $eBarb To $eBowl ; launch all remaining troops
+		For $i = $eBarb To $eIceG ; launch all remaining troops
 			If LaunchTroop($i, $nbSides, 1, 1, 1) Then
 				CheckHeroesHealth()
 				If _Sleep($DELAYALGORITHM_ALLTROOPS5) Then Return
@@ -641,7 +650,7 @@ Func LaunchTroopSmartFarm($listInfoDeploy, $iCC, $iKing, $iQueen, $iWarden, $SID
 		Local $waveNb = $listInfoDeploy[$i][2] ; waves
 		Local $maxWaveNb = $listInfoDeploy[$i][3] ; Max waves
 		Local $slotsPerEdge = $listInfoDeploy[$i][4] ; deploy Points per Edge
-		If $g_bDebugSetlog Then SetDebugLog("**ListInfoDeploy row " & $i & ": USE " & NameOfTroop($troopKind, 0) & " SIDES " & $nbSides & " WAVE " & $waveNb & " XWAVE " & $maxWaveNb & " SLOTXEDGE " & $slotsPerEdge, $COLOR_DEBUG)
+		If $g_bDebugSetlog Then SetDebugLog("**ListInfoDeploy row " & $i & ": USE " & GetTroopName($troopKind, 0) & " SIDES " & $nbSides & " WAVE " & $waveNb & " XWAVE " & $maxWaveNb & " SLOTXEDGE " & $slotsPerEdge, $COLOR_DEBUG)
 
 		; Regular Troops , not Heroes or Castle
 		If (IsNumber($troopKind)) Then
@@ -649,9 +658,7 @@ Func LaunchTroopSmartFarm($listInfoDeploy, $iCC, $iKing, $iQueen, $iWarden, $SID
 				If $g_avAttackTroops[$j][0] = $troopKind Then
 					$troop = $j
 					$troopNb = Ceiling($g_avAttackTroops[$j][1] / $maxWaveNb)
-					Local $plural = 0
-					If $troopNb > 1 Then $plural = 1
-					$name = NameOfTroop($troopKind, $plural)
+					$name = GetTroopName($troopKind, $troopNb)
 				EndIf
 			Next
 		EndIf
@@ -720,7 +727,7 @@ Func LaunchTroopSmartFarm($listInfoDeploy, $iCC, $iKing, $iQueen, $iWarden, $SID
 								If $g_bDebugSetlog Then SetDebugLog("Deploy CC $g_aaiBottomRightDropPoints")
 							EndIf
 
-							If ($g_bIsCCDropped = False And $infoTroopListArrPixel[0] = "CC") Then
+							If ($g_bIsCCDropped = False And $infoTroopListArrPixel[0] = "CC" And $i = $numberSidesDropTroop - 1) Then
 								dropCC($pixelRandomDropcc[0], $pixelRandomDropcc[1], $iCC)
 								$g_bIsCCDropped = True
 							ElseIf ($g_bIsHeroesDropped = False And $infoTroopListArrPixel[0] = "HEROES" And $i = $numberSidesDropTroop - 1) Then
@@ -759,9 +766,12 @@ Func LaunchTroopSmartFarm($listInfoDeploy, $iCC, $iKing, $iQueen, $iWarden, $SID
 			Local $infoPixelDropTroop = $listInfoDeployTroopPixel[$i]
 			If Not (IsString($infoPixelDropTroop[0]) And ($infoPixelDropTroop[0] = "CC" Or $infoPixelDropTroop[0] = "HEROES")) Then
 				Local $numberLeft = ReadTroopQuantity($infoPixelDropTroop[0])
-				If $g_bDebugSetlog Then SetDebugLog("Slot Nun= " & $infoPixelDropTroop[0])
-				If $g_bDebugSetlog Then SetDebugLog("Slot Xaxis= " & GetXPosOfArmySlot($infoPixelDropTroop[0], 40))
-				If $g_bDebugSetlog Then SetDebugLog($infoPixelDropTroop[5] & " - NumberLeft : " & $numberLeft)
+				If $g_bDebugSetlog Then
+					Local $aiSlotPos = GetSlotPosition($infoDropTroop[0])
+					SetDebugLog("Slot Nun= " & $infoPixelDropTroop[0])
+					SetDebugLog("Slot Xaxis= " & $aiSlotPos[0])
+				    SetDebugLog($infoPixelDropTroop[5] & " - NumberLeft : " & $numberLeft)
+				EndIf
 				If ($numberLeft > 0) Then
 					If _Sleep($DELAYLAUNCHTROOP21) Then Return
 					SelectDropTroop($infoPixelDropTroop[0]) ;Select Troop
@@ -789,7 +799,7 @@ Func DropTroopSmartFarm($troop, $nbSides, $number, $slotsPerEdge = 0, $name = ""
 
 	If ($number > 0 And $nbTroopsPerEdge = 0) Then $nbTroopsPerEdge = 1
 
-	If $g_bDebugSmartFarm Then Setlog(" - " & NameOfTroop($troop) & " Number: " & $number & " Sides: " & $nbSides & " SlotsPerEdge: " & $slotsPerEdge)
+	If $g_bDebugSmartFarm Then Setlog(" - " & GetTroopName($troop) & " Number: " & $number & " Sides: " & $nbSides & " SlotsPerEdge: " & $slotsPerEdge)
 
 	If $nbSides = 4 Then
 		; $listInfoPixelDropTroop = [$newPixelBottomRight, $newPixelTopLeft, $newPixelBottomLeft, $newPixelTopRight]

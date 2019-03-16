@@ -4,15 +4,14 @@
 ; Syntax ........:
 ; Parameters ....: None
 ; Return values .: None
-; Author ........: chalicucu (6-2016), demen (4-2017)
-; Modified ......: NguyenAnhHD (12-2017)
+; Author ........: chalicucu (6/2016), demen (4/2017)
+; Modified ......:
 ; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2016
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
 ; Example .......: No
 ; ===============================================================================================================================
-
 ; Return True or False if Switch Account is enabled and current profile in configured list
 Func ProfileSwitchAccountEnabled()
 	If Not $g_bChkSwitchAcc Or Not aquireSwitchAccountMutex() Then Return False
@@ -52,7 +51,6 @@ Func AccountNoActive()
 EndFunc   ;==>AccountNoActive
 
 Func InitiateSwitchAcc() ; Checking profiles setup in Mybot, First matching CoC Acc with current profile, Reset all Timers relating to Switch Acc Mode.
-
 	If Not ProfileSwitchAccountEnabled() Or Not $g_bInitiateSwitchAcc Then Return
 	UpdateMultiStats()
 	$g_iNextAccount = -1
@@ -63,10 +61,10 @@ Func InitiateSwitchAcc() ; Checking profiles setup in Mybot, First matching CoC 
 	For $i = 0 To $g_iTotalAcc
 		; listing all accounts
 		Local $sBotType = "Idle"
-		If $g_abAccountNo[$i] = True Then
+		If $g_abAccountNo[$i] Then
 			If SwitchAccountEnabled($i) Then
 				$sBotType = "Active"
-				If $g_abDonateOnly[$i] = True Then $sBotType = "Donate"
+				If $g_abDonateOnly[$i] Then $sBotType = "Donate"
 				If $g_iNextAccount = -1 Then $g_iNextAccount = $i
 				If $g_asProfileName[$i] = $g_sProfileCurrentName Then $g_iNextAccount = $i
 			Else
@@ -82,11 +80,9 @@ Func InitiateSwitchAcc() ; Checking profiles setup in Mybot, First matching CoC 
 	SwitchAccountVariablesReload("Reset")
 	SetLog("Let's start with Account [" & $g_iNextAccount + 1 & "]")
 	SwitchCOCAcc($g_iNextAccount)
-
 EndFunc   ;==>InitiateSwitchAcc
 
 Func CheckSwitchAcc()
-
 	Local $abAccountNo = AccountNoActive()
 
 	Local $aActiveAccount = _ArrayFindAll($abAccountNo, True)
@@ -98,7 +94,7 @@ Func CheckSwitchAcc()
 	Local $nMinRemainTrain, $iWaitTime
 	Local $aActibePBTaccounts = _ArrayFindAll($g_abPBActive, True)
 
-	SetLog("Start Switch Account...!", $COLOR_INFO)
+	SetLog("Start Switch Account!", $COLOR_INFO)
 
 	; Force Switch when PBT detected
 	If $g_abPBActive[$g_iCurAccount] = True Then $bForceSwitch = True
@@ -170,8 +166,8 @@ Func CheckSwitchAcc()
 		SetDebugLog("- Current Account: " & $g_asProfileName[$g_iCurAccount] & " number: " & $g_iCurAccount + 1)
 		SetDebugLog("- Next Account: " & $g_asProfileName[$g_iNextAccount] & " number: " & $g_iNextAccount + 1)
 
-		; Check if the next account is PBT
-		If $g_abPBActive[$g_iNextAccount] Then
+		; Check if the next account is PBT and IF the remain train time is more than 2 minutes
+		If $g_abPBActive[$g_iNextAccount] And _DateDiff("n", _NowCalc(), $g_asTrainTimeFinish[$g_iNextAccount]) > 2 Then
 			SetLog("Account " & $g_iNextAccount + 1 & " is in a Personal Break Time!", $COLOR_INFO)
 			SetSwitchAccLog(" - Account " & $g_iNextAccount + 1 & " is in PTB")
 			$g_iNextAccount = $g_iNextAccount + 1
@@ -307,7 +303,7 @@ Func SwitchCOCAcc($NextAccount)
 		If _Sleep(500) Then Return
 	EndIf
 
-	If $bResult = True Then
+	If $bResult Then
 		$iRetry = 0
 		$g_bReMatchAcc = False
 
@@ -320,6 +316,7 @@ Func SwitchCOCAcc($NextAccount)
 		EndIf
 
 		$g_iCurAccount = $NextAccount
+		SwitchAccountVariablesReload()
 
 		$g_ahTimerSinceSwitched[$g_iCurAccount] = __TimerInit()
 		$g_bInitiateSwitchAcc = False
@@ -343,7 +340,6 @@ Func SwitchCOCAcc($NextAccount)
 			waitMainScreen()
 		EndIf
 
-		SwitchAccountVariablesReload()
 		SetSwitchAccLog("Switched to Acc [" & $NextAccount + 1 & "]", $COLOR_SUCCESS)
 
 		If $g_bChkSharedPrefs Then
@@ -432,10 +428,10 @@ Func SwitchCOCAcc_DisconnectConnect(ByRef $bResult, $bDisconnectOnly = $g_bChkSh
 	Return "" ; should never get here
 EndFunc   ;==>SwitchCOCAcc_DisconnectConnect
 
-Func SwitchCOCAcc_ClickAccount(ByRef $bResult, $NextAccount, $bStayDisconnected = $g_bChkSharedPrefs, $bLateDisconnectButtonCheck = True)
+Func SwitchCOCAcc_ClickAccount(ByRef $bResult, $iNextAccount, $bStayDisconnected = $g_bChkSharedPrefs, $bLateDisconnectButtonCheck = True)
 	FuncEnter(SwitchCOCAcc_ClickAccount)
-	Local $sGPlayAccount = @ScriptDir & "\imgxml\GooglePlay\Accounts"
-	Local $AccountsCoord[0][2]
+
+	Local $aSearchForAccount, $aCoordinates[0][2], $aTempArray
 
 	For $i = 0 To 20 ; Checking Account List continuously in 20sec
 		If _ColorCheck(_GetPixelColor($aListAccount[0], $aListAccount[1], True), Hex($aListAccount[2], 6), $aListAccount[3]) Then ;	Grey
@@ -445,41 +441,43 @@ Func SwitchCOCAcc_ClickAccount(ByRef $bResult, $NextAccount, $bStayDisconnected 
 			EndIf
 			If _Sleep(600) Then Return FuncReturn("Exit")
 
-			Local $XCoordinates = QuickMIS("CX", $sGPlayAccount, 155, 100, 705, 710, True, $g_bDebugImageSave)
-			If UBound($XCoordinates) <= 0 Then
-				SetLog("No GooglePlay accounts detected!!", $COLOR_ERROR)
+			$aSearchForAccount = decodeMultipleCoords(findImage("AccountLocations", $g_sImgGoogleAccounts, GetDiamondFromRect("155,100,705,710"), 0, True, Default))
+			If UBound($aSearchForAccount, 1) <= 0 Then
+				SetLog("No GooglePlay accounts detected!", $COLOR_ERROR)
 				Return FuncReturn("Error")
-			ElseIf UBound($XCoordinates) < $g_iTotalAcc + 1 Then
-				SetLog("Less GooglePlay accounts detected than configured!!", $COLOR_ERROR)
-				SetDebugLog("Detected: " & UBound($XCoordinates) & ", Configured: " & ($g_iTotalAcc + 1), $COLOR_DEBUG)
+			ElseIf UBound($aSearchForAccount, 1) < $g_iTotalAcc + 1 Then
+				SetLog("Less GooglePlay accounts detected than configured!", $COLOR_ERROR)
+				SetDebugLog("Detected: " & UBound($aSearchForAccount, 1) & ", Configured: " & ($g_iTotalAcc + 1), $COLOR_DEBUG)
 				Return FuncReturn("Error")
-			ElseIf UBound($XCoordinates) > $g_iTotalAcc + 1 Then
-				SetLog("More GooglePlay accounts detected than configured!!", $COLOR_ERROR)
-				SetDebugLog("Detected: " & UBound($XCoordinates) & ", Configured: " & ($g_iTotalAcc + 1), $COLOR_DEBUG)
+			ElseIf UBound($aSearchForAccount, 1) > $g_iTotalAcc + 1 Then
+				SetLog("More GooglePlay accounts detected than configured!", $COLOR_ERROR)
+				SetDebugLog("Detected: " & UBound($aSearchForAccount, 1) & ", Configured: " & ($g_iTotalAcc + 1), $COLOR_DEBUG)
 				Return FuncReturn("Error")
 			Else
-				SetDebugLog("[GooglePlay Accounts]: " & UBound($XCoordinates), $COLOR_DEBUG)
-				ReDim $AccountsCoord[UBound($XCoordinates)][2]
-				For $j = 0 To UBound($XCoordinates) - 1
-					Local $Coordinates = StringSplit($XCoordinates[$j], ",", 2)
-					$AccountsCoord[$j][0] = $Coordinates[0] + 155
-					$AccountsCoord[$j][1] = $Coordinates[1] + 100
+				SetDebugLog("[GooglePlay Accounts]: " & UBound($aSearchForAccount, 1), $COLOR_DEBUG)
+
+				For $j = 0 To UBound($aSearchForAccount) - 1
+					$aTempArray = $aSearchForAccount[$j]
+					_ArrayAdd($aCoordinates, $aTempArray[0] & "|" & $aTempArray[1], 0, "|", @CRLF, $ARRAYFILL_FORCE_NUMBER)
 				Next
-				_ArraySort($AccountsCoord, 0, 0, 0, 1) ; short by column 1 [Y]
-				For $j = 0 To UBound($AccountsCoord) - 1
-					SetDebugLog("[" & $j & "] Account coordinates: " & $AccountsCoord[$j][0] & "," & $AccountsCoord[$j][1] & " named: " & $g_asProfileName[$j])
+
+				_ArraySort($aCoordinates, 0, 0, 0, 1) ; short by column 1 [Y]
+				For $j = 0 To UBound($aCoordinates) - 1
+					SetDebugLog("[" & $j & "] Account coordinates: " & $aCoordinates[$j][0] & "," & $aCoordinates[$j][1] & " named: " & $g_asProfileName[$j])
 				Next
-				If $NextAccount + 1 > UBound($XCoordinates) Then
-					SetLog("You selected a GooglePlay undetected account!!", $COLOR_ERROR)
+
+				If $iNextAccount + 1 > UBound($aCoordinates, 1) Then
+					SetLog("You selected a GooglePlay undetected account!", $COLOR_ERROR)
 					Return FuncReturn("Error")
 				EndIf
-				SetLog("   2. Click Account [" & $NextAccount + 1 & "]")
-				Click($AccountsCoord[$NextAccount][0], $AccountsCoord[$NextAccount][1], 1)
+
+				SetLog("   2. Click Account [" & $iNextAccount + 1 & "]")
+				Click($aCoordinates[$iNextAccount][0], $aCoordinates[$iNextAccount][1], 1)
 				If _Sleep(600) Then Return FuncReturn("Exit")
 				Return FuncReturn("OK")
 			EndIf
 
-			If $g_bRunState = False Then Return
+			If Not $g_bRunState Then Return
 			If _sleep(1000) Then Return FuncReturn("Exit")
 			Return FuncReturn("Error")
 		ElseIf (Not $bLateDisconnectButtonCheck Or $i = 6) And _ColorCheck(_GetPixelColor($aButtonDisconnected[0], $aButtonDisconnected[1], True), Hex($aButtonDisconnected[2], 6), $aButtonDisconnected[3]) Then ; Red, double click did not work, try click Disconnect 1 more time
@@ -680,7 +678,9 @@ EndFunc   ;==>SwitchCOCAcc_ConfirmSCID
 Func SwitchCOCAcc_ClickAccountSCID(ByRef $bResult, $NextAccount, $iStep = 4)
 	Local $YCoord = Int(336 + 73.5 * $NextAccount)
 	Local $iRetryCloseSCIDTab = 0
-	Local $g_sImgSCID = @ScriptDir & "\imgxml\SuperCellID\Accounts"
+
+	Local $aSearchForAccount, $aCoordinates[0][2], $aTempArray
+
 	Local $AccountsCoord[0][2]
 	For $i = 0 To 30 ; Checking "Log in with SuperCell ID" button continuously in 30sec
 		If _ColorCheck(_GetPixelColor($aLoginWithSupercellID[0], $aLoginWithSupercellID[1], True), Hex($aLoginWithSupercellID[2], 6), $aLoginWithSupercellID[3]) And _
@@ -720,31 +720,31 @@ Func SwitchCOCAcc_ClickAccountSCID(ByRef $bResult, $NextAccount, $iStep = 4)
 				; Alternative to MEmu 2.5.0 or 2.8.6
 				If _ColorCheck(_GetPixelColor(490, 275, True), Hex($aListAccountSCID[2], 6), $aListAccountSCID[3]) Then
 					For $i = 0 To 10
-						Local $XCoordinates = QuickMIS("CX", $g_sImgSCID, 550, 165, 690, 605, True, $g_bDebugImageSave)
-						If UBound($XCoordinates) > 0 Then
-							SetDebugLog("[SCID Accounts]: " & UBound($XCoordinates), $COLOR_DEBUG)
-							ReDim $AccountsCoord[UBound($XCoordinates)][2]
-							For $j = 0 To UBound($XCoordinates) - 1
-								Local $Coordinates = StringSplit($XCoordinates[$j], ",", 2)
-								$AccountsCoord[$j][0] = $Coordinates[0] + 550
-								$AccountsCoord[$j][1] = $Coordinates[1] + 165
+						$aSearchForAccount = decodeMultipleCoords(findImage("AccountLocations", $g_sImgSupercellID, GetDiamondFromRect("550,165,690,605"), 0, True, Default))
+						If UBound($aSearchForAccount) > 0 Then
+							SetDebugLog("[SCID Accounts]: " & UBound($aSearchForAccount), $COLOR_DEBUG)
+
+							For $j = 0 To UBound($aSearchForAccount) - 1
+								$aTempArray = $aSearchForAccount[$j]
+								_ArrayAdd($aCoordinates, $aTempArray[0] & "|" & $aTempArray[1], 0, "|", @CRLF, $ARRAYFILL_FORCE_NUMBER)
 							Next
-							_ArraySort($AccountsCoord, 0, 0, 0, 1) ; short by column 1 [Y]
-							For $j = 0 To UBound($AccountsCoord) - 1
-								SetDebugLog("[" & $j & "] Account coordinates: " & $AccountsCoord[$j][0] & "," & $AccountsCoord[$j][1] & " named: " & $g_asProfileName[$j])
+
+							_ArraySort($aCoordinates, 0, 0, 0, 1) ; short by column 1 [Y]
+							For $j = 0 To UBound($aCoordinates) - 1
+								SetDebugLog("[" & $j & "] Account coordinates: " & $aCoordinates[$j][0] & "," & $aCoordinates[$j][1] & " named: " & $g_asProfileName[$j])
 							Next
 							Setlog("SC_ID account number " & $NextAccount + 1 & " named: " & $g_asProfileName[$NextAccount])
-							If $NextAccount + 1 > UBound($XCoordinates) Then
-								setlog("You selected a SCID undetected account!!", $COLOR_ERROR)
+							If $NextAccount + 1 > UBound($aSearchForAccount) Then
+								setlog("You selected a SCID undetected account!", $COLOR_ERROR)
 								ExitLoop
 							EndIf
-							Click($AccountsCoord[$NextAccount][0] - 150, $AccountsCoord[$NextAccount][1], 1)
-							SetLog("Please wait for loading CoC...!")
+							Click($aCoordinates[$NextAccount][0] - 150, $aCoordinates[$NextAccount][1], 1)
+							SetLog("Please wait for loading CoC!")
 							$bResult = True
 							Return "OK"
 						EndIf
 
-						If $g_bRunState = False Then Return
+						If Not $g_bRunState Then Return
 						If _sleep(1000) Then Return
 					Next
 					Return "Error"
@@ -779,23 +779,14 @@ Func CheckWaitHero() ; get hero regen time remaining if enabled
 	$g_aiTimeTrain[2] = 0
 
 	$aHeroResult = getArmyHeroTime("all")
-
-	If @error Then
-		SetLog("getArmyHeroTime return error, exit Check Hero's wait time!", $COLOR_ERROR)
-		Return ; if error, then quit Check Hero's wait time
-	EndIf
-
-	If $aHeroResult = "" Then
-		SetLog("You have no hero or bad TH level detection Pls manually locate TH", $COLOR_ERROR)
-		Return
-	EndIf
+	If UBound($aHeroResult) < 3 Then Return ; OCR error
 
 	If _Sleep($DELAYRESPOND) Then Return
 	If $aHeroResult[0] > 0 Or $aHeroResult[1] > 0 Or $aHeroResult[2] > 0 Then ; check if hero is enabled to use/wait and set wait time
 		For $pTroopType = $eKing To $eWarden ; check all 3 hero
 			For $pMatchMode = $DB To $g_iModeCount - 1 ; check all attack modes
 				$iActiveHero = -1
-				If IsSpecialTroopToBeUsed($pMatchMode, $pTroopType) And _
+				If IsUnitUsed($pMatchMode, $pTroopType) And _
 						BitOR($g_aiAttackUseHeroes[$pMatchMode], $g_aiSearchHeroWaitEnable[$pMatchMode]) = $g_aiAttackUseHeroes[$pMatchMode] Then ; check if Hero enabled to wait
 					$iActiveHero = $pTroopType - $eKing ; compute array offset to active hero
 				EndIf
@@ -816,8 +807,9 @@ Func CheckTroopTimeAllAccount($bExcludeCurrent = False) ; Return the minimum rem
 
 	Local $abAccountNo = AccountNoActive()
 	Local $iMinRemainTrain = 999, $iRemainTrain, $bNextAccountDefined = False
-	If $bExcludeCurrent = False Then
-		If $g_abPBActive[$g_iCurAccount] = False Then $g_asTrainTimeFinish[$g_iCurAccount] = _DateAdd("n", _ArrayMax($g_aiTimeTrain, 1, 0, 2), _NowCalc())
+	If Not $bExcludeCurrent And Not $g_abPBActive[$g_iCurAccount] Then
+		$g_asTrainTimeFinish[$g_iCurAccount] = _DateAdd("n", Number(_ArrayMax($g_aiTimeTrain, 1, 0, 2)), _NowCalc())
+		SetDebugLog("Army times: Troop = " & $g_aiTimeTrain[0] & ", Spell = " & $g_aiTimeTrain[1] & ", Hero = " & $g_aiTimeTrain[2] & ", $g_asTrainTimeFinish = " & $g_asTrainTimeFinish[$g_iCurAccount])
 	EndIf
 
 	SetSwitchAccLog(" - Train times: ")
@@ -997,8 +989,7 @@ EndFunc   ;==>CheckLoginWithSupercellID
 
 Func CheckLoginWithSupercellIDScreen()
 
-	Local $g_sImgSCID = @ScriptDir & "\imgxml\SuperCellID\Accounts"
-	Local $AccountsCoord[0][2]
+	Local $aSearchForAccount, $aCoordinates[0][2], $aTempArray
 	Local $acount = $g_iWhatSCIDAccount2Use
 
 	If $g_bChkSuperCellID And ProfileSwitchAccountEnabled() Then
@@ -1008,39 +999,39 @@ Func CheckLoginWithSupercellIDScreen()
 	; Account List check be there, validate with imgloc
 	If UBound(decodeSingleCoord(FindImageInPlace("LoginWithSupercellID", $g_sImgLoginWithSupercellID, "318,678(125,30)", False))) > 1 Then
 		; Google Account selection found
-		SetLog("Verified Log in with Supercell ID boot screen")
+		SetLog("Verified Log in with Supercell ID boot screen for login")
 
 		Click($aLoginWithSupercellID[0], $aLoginWithSupercellID[1], 1, 0, "Click Log in with SC_ID")
 		If _Sleep(2000) Then Return
 		For $i = 0 To 10
-			Local $XCoordinates = QuickMIS("CX", $g_sImgSCID, 550, 165, 690, 605, True, $g_bDebugImageSave)
-			If UBound($XCoordinates) > 0 Then
-				SetDebugLog("[SCID Accounts]: " & UBound($XCoordinates), $COLOR_DEBUG)
-				ReDim $AccountsCoord[UBound($XCoordinates)][2]
-				For $j = 0 To UBound($XCoordinates) - 1
-					Local $Coordinates = StringSplit($XCoordinates[$j], ",", 2)
-					$AccountsCoord[$j][0] = $Coordinates[0] + 550
-					$AccountsCoord[$j][1] = $Coordinates[1] + 165
+			$aSearchForAccount = decodeMultipleCoords(findImage("AccountLocations", $g_sImgSupercellID, GetDiamondFromRect("550,165,690,605"), 0, True, Default))
+			If UBound($aSearchForAccount) > 0 Then
+				SetDebugLog("[SCID Accounts]: " & UBound($aSearchForAccount), $COLOR_DEBUG)
+
+				For $j = 0 To UBound($aSearchForAccount) - 1
+					$aTempArray = $aSearchForAccount[$j]
+					_ArrayAdd($aCoordinates, $aTempArray[0] & "|" & $aTempArray[1], 0, "|", @CRLF, $ARRAYFILL_FORCE_NUMBER)
 				Next
-				_ArraySort($AccountsCoord, 0, 0, 0, 1) ; short by column 1 [Y]
-				For $j = 0 To UBound($AccountsCoord) - 1
-					SetDebugLog("[" & $j & "] Account coordinates: " & $AccountsCoord[$j][0] & "," & $AccountsCoord[$j][1] & " named: " & $g_asProfileName[$j])
+				_ArraySort($aCoordinates, 0, 0, 0, 1) ; short by column 1 [Y]
+
+				For $j = 0 To UBound($aCoordinates) - 1
+					SetDebugLog("[" & $j & "] Account coordinates: " & $aCoordinates[$j][0] & "," & $aCoordinates[$j][1] & " named: " & $g_asProfileName[$j])
 				Next
 				Setlog("SC_ID account number " & $acount + 1 & " named: " & $g_asProfileName[$acount])
-				If $acount + 1 > UBound($XCoordinates) Then
-					setlog("You selected a SCID undetected account!!", $COLOR_ERROR)
+				If $acount + 1 > UBound($aSearchForAccount) Then
+					setlog("You selected a SCID undetected account", $COLOR_ERROR)
 					ExitLoop
 				EndIf
-				Click($AccountsCoord[$acount][0] - 150, $AccountsCoord[$acount][1], 1)
-				SetLog("Please wait for loading CoC...!")
+				Click($aCoordinates[$acount][0] - 150, $aCoordinates[$acount][1], 1)
+				SetLog("Please wait for loading CoC!")
 				ExitLoop
 			EndIf
 
-			If $g_bRunState = False Then Return
+			If Not $g_bRunState Then Return
 			If _sleep(1000) Then Return
 		Next
 	Else
-		SetDebugLog("Log in with Supercell ID boot screen not verified")
+		SetDebugLog("Log in with Supercell ID boot screen not verified for login")
 	EndIf
 
 EndFunc   ;==>CheckLoginWithSupercellIDScreen

@@ -6,7 +6,7 @@
 ; Return values .:
 ; Author ........: Fliegerfaust(11-2017)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -36,7 +36,7 @@ Func getArmySpells($bOpenArmyWindow = False, $bCloseArmyWindow = False, $bCheckW
 	Local $aTempSpellArray, $aSpellCoords
 	Local $sSpellName = ""
 	Local $iSpellIndex = -1
-	Local $aCurrentSpellsEmpty[$eSpellCount] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ; Local Copy to reset Spells Array
+	Local $aCurrentSpellsEmpty[$eSpellCount] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ; Local Copy to reset Spells Array
 	Local $aCurrentSpellsLog[$eSpellCount][3] ; [0] = Name [1] = Quantities [3] Xaxis
 
 	$g_aiCurrentSpells = $aCurrentSpellsEmpty ; Reset Current Spells Array
@@ -47,9 +47,10 @@ Func getArmySpells($bOpenArmyWindow = False, $bCloseArmyWindow = False, $bCheckW
 
 			$iSpellIndex = TroopIndexLookup($aTempSpellArray[0], "getArmySpells()") - $eLSpell ; Get the Index of the Spell from the ShortName
 
-			If $iSpellIndex = -1 Then ContinueLoop
+			If $iSpellIndex < 0 Then ContinueLoop
 
 			$aSpellCoords = StringSplit($aTempSpellArray[1], ",", $STR_NOCOUNT) ; Split the Coordinates where the Spell got found into X and Y
+			If UBound($aSpellCoords) < 2  Then ContinueLoop
 			$g_aiCurrentSpells[$iSpellIndex] = Number(getBarracksNewTroopQuantity(Slot($aSpellCoords[0], $aSpellCoords[1]), 341, $bNeedCapture)) ; Get The Quantity of the Spell, Slot() Does return the exact spot to read the Number from
 
 			$sSpellName = $g_aiCurrentSpells[$iSpellIndex] >= 2 ? $g_asSpellNames[$iSpellIndex] & " Spells" : $g_asSpellNames[$iSpellIndex] & " Spell" ; Select the right Spell Name, If more than one then use Spells at the end

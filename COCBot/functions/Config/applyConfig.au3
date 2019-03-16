@@ -6,7 +6,7 @@
 ; Return values .: NA
 ; Author ........:
 ; Modified ......: CodeSlinger69 (01-2017)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -185,6 +185,7 @@ Func ApplyConfig_Android($TypeReadSave)
 			SetCurSelCmbCOCDistributors()
 			UpdateBotTitle()
 			_GUICtrlComboBox_SetCurSel($g_hCmbAndroidBackgroundMode, $g_iAndroidBackgroundMode)
+			_GUICtrlComboBox_SetCurSel($g_hCmbAndroidZoomoutMode, $g_iAndroidZoomoutMode)
 			GUICtrlSetState($g_hChkAndroidAdbClickDragScript, $g_bAndroidAdbClickDragScript ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkAndroidCloseWithBot, $g_bAndroidCloseWithBot ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetData($g_hTxtAndroidRebootHours, $g_iAndroidRebootHours)
@@ -192,6 +193,9 @@ Func ApplyConfig_Android($TypeReadSave)
 		Case "Save"
 			cmbCOCDistributors()
 			cmbAndroidBackgroundMode()
+			$g_iAndroidZoomoutMode = _GUICtrlComboBox_GetCurSel($g_hCmbAndroidZoomoutMode)
+			$g_bAndroidAdbClickEnabled = (GUICtrlRead($g_hChkAndroidAdbClick) = $GUI_CHECKED ? True : False)
+			$g_bAndroidAdbClick = $g_bAndroidAdbClickEnabled ; also update $g_bAndroidAdbClick as that one is actually used
 			$g_bAndroidAdbClickDragScript = (GUICtrlRead($g_hChkAndroidAdbClickDragScript) = $GUI_CHECKED ? True : False)
 			$g_bAndroidCloseWithBot = (GUICtrlRead($g_hChkAndroidCloseWithBot) = $GUI_CHECKED ? True : False)
 			$g_iAndroidRebootHours = Int(GUICtrlRead($g_hTxtAndroidRebootHours)) ; Hours are entered
@@ -302,6 +306,7 @@ Func ApplyConfig_600_6($TypeReadSave)
 			GUICtrlSetData($g_hTxtTreasuryDark, $g_iTxtTreasuryDark)
 
 			GUICtrlSetState($g_hChkCollectBuilderBase, $g_bChkCollectBuilderBase ? $GUI_CHECKED : $GUI_UNCHECKED)
+			GUICtrlSetState($g_hChkCleanBBYard, $g_bChkCleanBBYard ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkStartClockTowerBoost, $g_bChkStartClockTowerBoost ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkCTBoostBlderBz, $g_bChkCTBoostBlderBz ? $GUI_CHECKED : $GUI_UNCHECKED)
 			chkStartClockTowerBoost()
@@ -360,6 +365,7 @@ Func ApplyConfig_600_6($TypeReadSave)
 			$g_iTxtTreasuryDark = GUICtrlRead($g_hTxtTreasuryDark)
 
 			$g_bChkCollectBuilderBase = (GUICtrlRead($g_hChkCollectBuilderBase) = $GUI_CHECKED)
+			$g_bChkCleanBBYard = (GUICtrlRead($g_hChkCleanBBYard) = $GUI_CHECKED)
 			$g_bChkStartClockTowerBoost = (GUICtrlRead($g_hChkStartClockTowerBoost) = $GUI_CHECKED)
 			$g_bChkCTBoostBlderBz = (GUICtrlRead($g_hChkCTBoostBlderBz) = $GUI_CHECKED)
 			$g_iChkBBSuggestedUpgrades = (GUICtrlRead($g_hChkBBSuggestedUpgrades) = $GUI_CHECKED) ? 1 : 0
@@ -426,10 +432,11 @@ Func ApplyConfig_600_11($TypeReadSave)
 			For $i = 0 To 2
 				_GUICtrlComboBox_SetCurSel($g_ahCmbClanCastleTroop[$i] , $g_aiClanCastleTroopWaitType[$i])
 				GUICtrlSetData($g_ahTxtClanCastleTroop[$i], $g_aiClanCastleTroopWaitQty[$i])
-			Next
-			For $i = 0 To 1
+
 				_GUICtrlComboBox_SetCurSel($g_ahCmbClanCastleSpell[$i] , $g_aiClanCastleSpellWaitType[$i])
-				GUICtrlSetData($g_ahTxtClanCastleSpell[$i], $g_aiClanCastleSpellWaitQty[$i])
+
+				If $i > 1 Then ContinueLoop ; Siege has only 2 combobox
+				_GUICtrlComboBox_SetCurSel($g_ahCmbClanCastleSiege[$i] , $g_aiClanCastleSiegeWaitType[$i])
 			Next
 			chkRequestCountCC()
 			chkRequestCCHours()
@@ -449,10 +456,11 @@ Func ApplyConfig_600_11($TypeReadSave)
 			For $i = 0 To 2
 				$g_aiClanCastleTroopWaitType[$i] = _GUICtrlComboBox_GetCurSel($g_ahCmbClanCastleTroop[$i])
 				$g_aiClanCastleTroopWaitQty[$i] = GUICtrlRead($g_ahTxtClanCastleTroop[$i])
-			Next
-			For $i = 0 To 1
+
 				$g_aiClanCastleSpellWaitType[$i] = _GUICtrlComboBox_GetCurSel($g_ahCmbClanCastleSpell[$i])
-				$g_aiClanCastleSpellWaitQty[$i] = GUICtrlRead($g_ahTxtClanCastleSpell[$i])
+
+				If $i > 1 Then ContinueLoop ; Siege has only 2 combobox
+				$g_aiClanCastleSiegeWaitType[$i] = _GUICtrlComboBox_GetCurSel($g_ahCmbClanCastleSiege[$i])
 			Next
 			For $i = 0 To 23
 				$g_abRequestCCHours[$i] = (GUICtrlRead($g_ahChkRequestCCHours[$i]) = $GUI_CHECKED)
@@ -519,6 +527,13 @@ Func ApplyConfig_600_12($TypeReadSave)
 					GUICtrlSetBkColor($g_ahLblDonateTroop[$index + $i], $GUI_BKCOLOR_TRANSPARENT)
 				EndIf
 
+				If $g_abChkDonateAllTroop[$index + $i] Then
+					GUICtrlSetState($g_ahChkDonateAllTroop[$index + $i], $GUI_CHECKED)
+					_DonateAllControls($index + $i, True)
+				Else
+					GUICtrlSetState($g_ahChkDonateAllTroop[$index + $i], $GUI_UNCHECKED)
+				EndIf
+
 				GUICtrlSetData($g_ahTxtDonateTroop[$index + $i], $g_asTxtDonateTroop[$index + $i])
 				GUICtrlSetData($g_ahTxtBlacklistTroop[$index + $i], $g_asTxtBlacklistTroop[$index + $i])
 			Next
@@ -577,6 +592,7 @@ Func ApplyConfig_600_12($TypeReadSave)
 			For $i = $eSiegeWallWrecker to $eSiegeMachineCount - 1
 				Local $index = $eTroopCount + $g_iCustomDonateConfigs
 				$g_abChkDonateTroop[$index + $i] = (GUICtrlRead($g_ahChkDonateTroop[$index + $i]) = $GUI_CHECKED)
+				$g_abChkDonateAllTroop[$index + $i] = (GUICtrlRead($g_ahChkDonateAllTroop[$index + $i]) = $GUI_CHECKED)
 				$g_asTxtDonateTroop[$index + $i] = GUICtrlRead($g_ahTxtDonateTroop[$index + $i])
 				$g_asTxtBlacklistTroop[$index + $i] = GUICtrlRead($g_ahTxtBlacklistTroop[$index + $i])
 			Next
@@ -642,9 +658,15 @@ Func ApplyConfig_600_14($TypeReadSave)
 			_GUICtrlComboBox_SetCurSel($g_hCmbLaboratory, $g_iCmbLaboratory)
 			_GUICtrlSetImage($g_hPicLabUpgrade, $g_sLibIconPath, $g_avLabTroops[$g_iCmbLaboratory][4])
 			chkLab()
+			GUICtrlSetState($g_hChkAutoStarLabUpgrades, $g_bAutoStarLabUpgradeEnable ? $GUI_CHECKED : $GUI_UNCHECKED)
+			_GUICtrlComboBox_SetCurSel($g_hCmbStarLaboratory, $g_iCmbStarLaboratory)
+			_GUICtrlSetImage($g_hPicStarLabUpgrade, $g_sLibIconPath, $g_avStarLabTroops[$g_iCmbStarLaboratory][4])
+			chkStarLab()
 		Case "Save"
 			$g_bAutoLabUpgradeEnable = (GUICtrlRead($g_hChkAutoLabUpgrades) = $GUI_CHECKED)
 			$g_iCmbLaboratory = _GUICtrlComboBox_GetCurSel($g_hCmbLaboratory)
+			$g_bAutoStarLabUpgradeEnable = (GUICtrlRead($g_hChkAutoStarLabUpgrades) = $GUI_CHECKED)
+			$g_iCmbStarLaboratory = _GUICtrlComboBox_GetCurSel($g_hCmbStarLaboratory)
 	EndSwitch
 EndFunc   ;==>ApplyConfig_600_14
 
@@ -722,7 +744,7 @@ Func ApplyConfig_auto($TypeReadSave)
 	; Auto Upgrade
 	Switch $TypeReadSave
 		Case "Read"
-			GUICtrlSetState($g_hChkAutoUpgrade, $g_iChkAutoUpgrade = 1 ? $GUI_CHECKED : $GUI_UNCHECKED)
+			GUICtrlSetState($g_hChkAutoUpgrade, $g_bAutoUpgradeEnabled ? $GUI_CHECKED : $GUI_UNCHECKED)
 			For $i = 0 To 12
 				GUICtrlSetState($g_hChkUpgradesToIgnore[$i], $g_iChkUpgradesToIgnore[$i] = 1 ? $GUI_CHECKED : $GUI_UNCHECKED)
 			Next
@@ -734,7 +756,7 @@ Func ApplyConfig_auto($TypeReadSave)
 			GUICtrlSetData($g_hTxtSmartMinDark, $g_iTxtSmartMinDark)
 			chkAutoUpgrade()
 		Case "Save"
-			$g_iChkAutoUpgrade = GUICtrlRead($g_hChkAutoUpgrade) = $GUI_CHECKED ? 1 : 0
+			$g_bAutoUpgradeEnabled = (GUICtrlRead($g_hChkAutoUpgrade) = $GUI_CHECKED)
 			For $i = 0 To 12
 				$g_iChkUpgradesToIgnore[$i] = GUICtrlRead($g_hChkUpgradesToIgnore[$i]) = $GUI_CHECKED ? 1 : 0
 			Next
@@ -1324,12 +1346,14 @@ Func ApplyConfig_600_29_DB($TypeReadSave)
 			GUICtrlSetState($g_hChkDBKingAttack, BitAND($g_aiAttackUseHeroes[$DB], $eHeroKing) = $eHeroKing ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkDBQueenAttack, BitAND($g_aiAttackUseHeroes[$DB], $eHeroQueen) = $eHeroQueen ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkDBWardenAttack, BitAND($g_aiAttackUseHeroes[$DB], $eHeroWarden) = $eHeroWarden ? $GUI_CHECKED : $GUI_UNCHECKED)
+			chkDBWardenAttack()
 			Local $temp1, $temp2, $temp3
 			$temp1 = GUICtrlRead($g_hChkDBKingAttack) = $GUI_CHECKED ? $eHeroKing : $eHeroNone
 			$temp2 = GUICtrlRead($g_hChkDBQueenAttack) = $GUI_CHECKED ? $eHeroQueen : $eHeroNone
 			$temp3 = GUICtrlRead($g_hChkDBWardenAttack) = $GUI_CHECKED ? $eHeroWarden : $eHeroNone
 			$g_aiAttackUseHeroes[$DB] = BitOR(Int($temp1), Int($temp2), Int($temp3))
 			GUICtrlSetState($g_hChkDBDropCC, $g_abAttackDropCC[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
+			chkDBDropCC()
 			GUICtrlSetState($g_hChkDBLightSpell, $g_abAttackUseLightSpell[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkDBHealSpell, $g_abAttackUseHealSpell[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkDBRageSpell, $g_abAttackUseRageSpell[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
@@ -1340,12 +1364,14 @@ Func ApplyConfig_600_29_DB($TypeReadSave)
 			GUICtrlSetState($g_hChkDBEarthquakeSpell, $g_abAttackUseEarthquakeSpell[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkDBHasteSpell, $g_abAttackUseHasteSpell[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkDBSkeletonSpell, $g_abAttackUseSkeletonSpell[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
+			GUICtrlSetState($g_hChkDBBatSpell, $g_abAttackUseBatSpell[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkTHSnipeBeforeDBEnable, $g_bTHSnipeBeforeEnable[$DB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			chkTHSnipeBeforeDBEnable()
 			GUICtrlSetData($g_hTxtTHSnipeBeforeDBTiles, $g_iTHSnipeBeforeTiles[$DB])
 			LoadDBSnipeAttacks() ; recreate combo box values
 			_GUICtrlComboBox_SetCurSel($g_hCmbTHSnipeBeforeDBScript, _GUICtrlComboBox_FindStringExact($g_hCmbTHSnipeBeforeDBScript, $g_iTHSnipeBeforeScript[$DB]))
 
+			_GUICtrlComboBox_SetCurSel($g_hCmbDBWardenMode, $g_aiAttackUseWardenMode[$DB])
 			_GUICtrlComboBox_SetCurSel($g_hCmbDBSiege, $g_aiAttackUseSiege[$DB])
 		Case "Save"
 			$g_aiAttackAlgorithm[$DB] = _GUICtrlComboBox_GetCurSel($g_hCmbDBAlgorithm)
@@ -1366,10 +1392,12 @@ Func ApplyConfig_600_29_DB($TypeReadSave)
 			$g_abAttackUseHasteSpell[$DB] = (GUICtrlRead($g_hChkDBHasteSpell) = $GUI_CHECKED)
 			$g_abAttackUseCloneSpell[$DB] = (GUICtrlRead($g_hChkDBCloneSpell) = $GUI_CHECKED)
 			$g_abAttackUseSkeletonSpell[$DB] = (GUICtrlRead($g_hChkDBSkeletonSpell) = $GUI_CHECKED)
+			$g_abAttackUseBatSpell[$DB] = (GUICtrlRead($g_hChkDBBatSpell) = $GUI_CHECKED)
 			$g_bTHSnipeBeforeEnable[$DB] = (GUICtrlRead($g_hChkTHSnipeBeforeDBEnable) = $GUI_CHECKED)
 			$g_iTHSnipeBeforeTiles[$DB] = GUICtrlRead($g_hTxtTHSnipeBeforeDBTiles)
 			$g_iTHSnipeBeforeScript[$DB] = GUICtrlRead($g_hCmbTHSnipeBeforeDBScript)
 
+			$g_aiAttackUseWardenMode[$DB] = _GUICtrlComboBox_GetCurSel($g_hCmbDBWardenMode)
 			$g_aiAttackUseSiege[$DB] = _GUICtrlComboBox_GetCurSel($g_hCmbDBSiege)
 	EndSwitch
 
@@ -1593,12 +1621,14 @@ Func ApplyConfig_600_29_LB($TypeReadSave)
 			GUICtrlSetState($g_hChkABKingAttack, BitAND($g_aiAttackUseHeroes[$LB], $eHeroKing) = $eHeroKing ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkABQueenAttack, BitAND($g_aiAttackUseHeroes[$LB], $eHeroQueen) = $eHeroQueen ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkABWardenAttack, BitAND($g_aiAttackUseHeroes[$LB], $eHeroWarden) = $eHeroWarden ? $GUI_CHECKED : $GUI_UNCHECKED)
+			chkABWardenAttack()
 			Local $temp1, $temp2, $temp3
 			$temp1 = GUICtrlRead($g_hChkABKingAttack) = $GUI_CHECKED ? $eHeroKing : $eHeroNone
 			$temp2 = GUICtrlRead($g_hChkABQueenAttack) = $GUI_CHECKED ? $eHeroQueen : $eHeroNone
 			$temp3 = GUICtrlRead($g_hChkABWardenAttack) = $GUI_CHECKED ? $eHeroWarden : $eHeroNone
 			$g_aiAttackUseHeroes[$LB] = BitOR(Int($temp1), Int($temp2), Int($temp3))
 			GUICtrlSetState($g_hChkABDropCC, $g_abAttackDropCC[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
+			chkABDropCC()
 			GUICtrlSetState($g_hChkABLightSpell, $g_abAttackUseLightSpell[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkABHealSpell, $g_abAttackUseHealSpell[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkABRageSpell, $g_abAttackUseRageSpell[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
@@ -1609,12 +1639,14 @@ Func ApplyConfig_600_29_LB($TypeReadSave)
 			GUICtrlSetState($g_hChkABEarthquakeSpell, $g_abAttackUseEarthquakeSpell[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkABHasteSpell, $g_abAttackUseHasteSpell[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkABSkeletonSpell, $g_abAttackUseSkeletonSpell[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
+			GUICtrlSetState($g_hChkABBatSpell, $g_abAttackUseBatSpell[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			GUICtrlSetState($g_hChkTHSnipeBeforeLBEnable, $g_bTHSnipeBeforeEnable[$LB] ? $GUI_CHECKED : $GUI_UNCHECKED)
 			chkTHSnipeBeforeLBEnable()
 			GUICtrlSetData($g_hTxtTHSnipeBeforeLBTiles, $g_iTHSnipeBeforeTiles[$LB])
 			LoadABSnipeAttacks() ; recreate combo box values
 			_GUICtrlComboBox_SetCurSel($g_hCmbTHSnipeBeforeLBScript, _GUICtrlComboBox_FindStringExact($g_hCmbTHSnipeBeforeLBScript, $g_iTHSnipeBeforeScript[$LB]))
 
+			_GUICtrlComboBox_SetCurSel($g_hCmbABWardenMode, $g_aiAttackUseWardenMode[$LB])
 			_GUICtrlComboBox_SetCurSel($g_hCmbABSiege, $g_aiAttackUseSiege[$LB])
 		Case "Save"
 			$g_aiAttackAlgorithm[$LB] = _GUICtrlComboBox_GetCurSel($g_hCmbABAlgorithm)
@@ -1635,10 +1667,12 @@ Func ApplyConfig_600_29_LB($TypeReadSave)
 			$g_abAttackUseEarthquakeSpell[$LB] = (GUICtrlRead($g_hChkABEarthquakeSpell) = $GUI_CHECKED)
 			$g_abAttackUseHasteSpell[$LB] = (GUICtrlRead($g_hChkABHasteSpell) = $GUI_CHECKED)
 			$g_abAttackUseSkeletonSpell[$LB] = (GUICtrlRead($g_hChkABSkeletonSpell) = $GUI_CHECKED)
+			$g_abAttackUseBatSpell[$LB] = (GUICtrlRead($g_hChkABBatSpell) = $GUI_CHECKED)
 			$g_bTHSnipeBeforeEnable[$LB] = (GUICtrlRead($g_hChkTHSnipeBeforeLBEnable) = $GUI_CHECKED)
 			$g_iTHSnipeBeforeTiles[$LB] = GUICtrlRead($g_hTxtTHSnipeBeforeLBTiles)
 			$g_iTHSnipeBeforeScript[$LB] = GUICtrlRead($g_hCmbTHSnipeBeforeLBScript)
 
+			$g_aiAttackUseWardenMode[$LB] = _GUICtrlComboBox_GetCurSel($g_hCmbABWardenMode)
 			$g_aiAttackUseSiege[$LB] = _GUICtrlComboBox_GetCurSel($g_hCmbABSiege)
 	EndSwitch
 
@@ -1882,9 +1916,9 @@ Func ApplyConfig_600_31($TypeReadSave)
 	; <><><><> Attack Plan / Search & Attack / Deadbase / Collectors <><><><>
 	Switch $TypeReadSave
 		Case "Read"
-			For $i = 6 To 12
+			For $i = 6 To 13
 				GUICtrlSetState($g_ahChkDBCollectorLevel[$i], $g_abCollectorLevelEnabled[$i] ? $GUI_CHECKED : $GUI_UNCHECKED)
-				GUICtrlSetState($g_ahCmbDBCollectorLevel[$i], $g_abCollectorLevelEnabled[$i] ? $GUI_ENABLE : $GUI_DISABLE)
+                GUICtrlSetState($g_ahCmbDBCollectorLevel[$i], $g_abCollectorLevelEnabled[$i] ? $GUI_ENABLE : $GUI_DISABLE)
 				_GUICtrlComboBox_SetCurSel($g_ahCmbDBCollectorLevel[$i], $g_aiCollectorLevelFill[$i])
 			Next
 			GUICtrlSetState($g_hChkDBDisableCollectorsFilter, $g_bCollectorFilterDisable ? $GUI_CHECKED : $GUI_UNCHECKED)
@@ -1892,7 +1926,7 @@ Func ApplyConfig_600_31($TypeReadSave)
 			GUICtrlSetData($g_hSldCollectorTolerance, $g_iCollectorToleranceOffset)
 			checkCollectors()
 		Case "Save"
-			For $i = 6 To 12
+			For $i = 6 To 13
 				$g_abCollectorLevelEnabled[$i] = (GUICtrlRead($g_ahChkDBCollectorLevel[$i]) = $GUI_CHECKED)
 				$g_aiCollectorLevelFill[$i] = _GUICtrlComboBox_GetCurSel($g_ahCmbDBCollectorLevel[$i])
 			Next

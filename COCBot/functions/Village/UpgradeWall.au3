@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........: ProMac (2015), HungLe (2015)
 ; Modified ......: Sardo (08-2015), KnowJack (08-2015), MonkeyHunter(06-2016) , trlopes (07-2016)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......: checkwall.au3
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -100,6 +100,7 @@ Func UpgradeWall()
 
 				ClickP($aAway, 1, 0, "#0314") ; click away
 				VillageReport(True, True)
+				If SkipWallUpgrade() Then Return
 				$MinWallGold = Number($g_aiCurrentLoot[$eLootGold] - $g_iWallCost) > Number($g_iUpgradeWallMinGold) ; Check if enough Gold
 				$MinWallElixir = Number($g_aiCurrentLoot[$eLootElixir] - $g_iWallCost) > Number($g_iUpgradeWallMinElixir) ; Check if enough Elixir
 
@@ -317,19 +318,16 @@ Func SkipWallUpgrade() ; Dynamic Upgrades
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;##### Verify the Upgrade troop kind in Laboratory , if is elixir Spell/Troop , the Lab have priority #####;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	Local $bMinWallElixir = Number($g_aiCurrentLoot[$eLootElixir]) > ($g_iWallCost + Number($g_iLaboratoryElixirCost) + Number($g_iUpgradeWallMinElixir)) ; Check if enough Elixir
-	If $g_bAutoLabUpgradeEnable And $g_iCmbLaboratory >= 1 And Not ($g_iCmbLaboratory >= 20 And $g_iCmbLaboratory <= 30) And Not $bMinWallElixir Then
-		Local $sName = $g_avLabTroops[$g_iCmbLaboratory][3]
-		Local $LabElixirNeeded = $g_iLaboratoryElixirCost
-		If $LabElixirNeeded = 0 Then $LabElixirNeeded = "unknown" ; trap error condition of unknown value
+	If $g_bAutoLabUpgradeEnable And $g_iLaboratoryElixirCost > 0 And Not $bMinWallElixir Then
 		Switch $g_iUpgradeWallLootType
 			Case 0 ; Using gold
 				; do nothing
 			Case 1 ; Using elixir
-				SetLog("Laboratory needs " & $LabElixirNeeded & " Elixir to Upgrade:  " & $sName, $COLOR_SUCCESS1)
+				SetLog("Laboratory needs Elixir to Upgrade :  " & $g_iLaboratoryElixirCost, $COLOR_SUCCESS1)
 				SetLog("Skipping Wall Upgrade", $COLOR_SUCCESS1)
 				Return True
 			Case 2 ; Using gold and elixir
-				SetLog("Laboratory needs " & $LabElixirNeeded & " Elixir to Upgrade:  " & $sName, $COLOR_SUCCESS1)
+				SetLog("Laboratory needs Elixir to Upgrade :  " & $g_iLaboratoryElixirCost, $COLOR_SUCCESS1)
 				SetLog("Using Gold only for Wall Upgrade", $COLOR_SUCCESS1)
 				$g_iUpgradeWallLootType = 0
 		EndSwitch

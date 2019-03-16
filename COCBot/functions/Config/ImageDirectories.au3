@@ -4,7 +4,7 @@
 ; Syntax ........: $g_sImgxxx = @ScriptDir & "\imgxml\xxx\"
 ; Author ........:
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -47,6 +47,10 @@ Global $g_sImgCollectRessourcesBB = @ScriptDir & "\imgxml\Resources\BuildersBase
 Global $g_sImgBoatBB = @ScriptDir & "\imgxml\Boat\BoatBuilderBase_0_89.xml"
 Global $g_sImgZoomOutDirBB = @ScriptDir & "\imgxml\village\BuilderBase\"
 Global $g_sImgStartCTBoost = @ScriptDir & "\imgxml\Resources\BuildersBase\ClockTower\ClockTowerAvailable*.xml"
+Global $g_sImgCleanBBYard = @ScriptDir & "\imgxml\Resources\ObstaclesBB"
+Global $g_sImgIsOnBB = @ScriptDir & "\imgxml\village\Page\BuilderBase*"
+Global $g_sImgStarLaboratory = @ScriptDir & "\imgxml\Resources\BuildersBase\StarLaboratory"
+Global $g_sImgStarLabElex = @ScriptDir & "\imgxml\Resources\BuildersBase\StarLabElex\StarLabElex*"
 #EndRegion
 
 #Region DonateCC
@@ -55,6 +59,7 @@ Global $g_sImgDonateSpells = @ScriptDir & "\imgxml\DonateCC\Spells\"
 Global $g_sImgDonateSiege = @ScriptDir & "\imgxml\DonateCC\SiegeMachines\"
 Global $g_sImgChatDivider = @ScriptDir & "\imgxml\DonateCC\donateccwbl\chatdivider_0_98.xml"
 Global $g_sImgChatDividerHidden = @ScriptDir & "\imgxml\DonateCC\donateccwbl\chatdividerhidden_0_98.xml"
+Global $g_sImgChatIUnterstand = @ScriptDir & "\imgxml\DonateCC\donateccwbl\iunderstand_0_95.xml"
 #EndRegion
 
 #Region Auto Upgrade Normal Village
@@ -84,14 +89,13 @@ Global $g_sImgAutoUpgradeNewBldgNo = @ScriptDir & "\imgxml\Resources\BuildersBas
 Global $g_sImgTrainTroops = @ScriptDir & "\imgxml\Train\Train_Train\"
 Global $g_sImgTrainSpells = @ScriptDir & "\imgxml\Train\Spell_Train\"
 Global $g_sImgArmyOverviewSpells = @ScriptDir & "\imgxml\ArmyOverview\Spells" ; @ScriptDir & "\imgxml\ArmySpells"
+Global $g_sImgRequestCCButton = @ScriptDir & "\imgxml\ArmyOverview\RequestCC"
 #EndRegion
 
 #Region Attack
 Global $g_sImgAttackBarDir = @ScriptDir & "\imgxml\AttackBar"
-Global $g_sImgSwitchSiegeMachine = @ScriptDir & "\imgxml\SwitchSiegeMachines\Siege"
-Global $g_sImgSwitchSiegeCastle = @ScriptDir & "\imgxml\SwitchSiegeMachines\Castle"
-Global $g_sImgSwitchSiegeWallWrecker = @ScriptDir & "\imgxml\SwitchSiegeMachines\WallWrecker"
-Global $g_sImgSwitchSiegeBattleBlimp = @ScriptDir & "\imgxml\SwitchSiegeMachines\BattleBlimp"
+Global $g_sImgSwitchSiegeMachine = @ScriptDir & "\imgxml\SwitchSiegeMachines\"
+Global $g_sImgSwitchWardenMode = @ScriptDir & "\imgxml\SwitchWardenMode"
 #EndRegion
 
 #Region Search
@@ -109,12 +113,15 @@ Global $g_sImgWeakBaseBuildingsAirDefenseDir = @ScriptDir & "\imgxml\Buildings\A
 Global $g_sImgSearchDrill = @ScriptDir & "\imgxml\Storages\Drills"
 Global $g_sImgSearchDrillLevel = @ScriptDir & "\imgxml\Storages\Drills\Level"
 Global $g_sImgEasyBuildings = @ScriptDir & "\imgxml\easybuildings"
+Global $g_sImgRetrySearchButton = @ScriptDir & "\imgxml\Resources\Clouds\RetryButton*"
 #EndRegion
 
 #Region SwitchAcc
 Global Const $g_sImgLoginWithSupercellID = @ScriptDir & "\imgxml\other\LoginWithSupercellID*"
 Global Const $g_sImgGoogleSelectAccount = @ScriptDir & "\imgxml\other\GoogleSelectAccount*"
 Global Const $g_sImgGoogleSelectEmail = @ScriptDir & "\imgxml\other\GoogleSelectEmail*"
+Global Const $g_sImgGoogleAccounts = @ScriptDir & "\imgxml\SwitchAccounts\GooglePlay\GooglePlay*"
+Global Const $g_sImgSupercellID = @ScriptDir & "\imgxml\SwitchAccounts\SuperCellID\SCID*"
 #EndRegion
 
 #Region ClanGames

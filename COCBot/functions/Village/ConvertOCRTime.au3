@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........: Boju (11-2016)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -38,7 +38,7 @@ Func ConvertOCRTime($WhereRead, $ToConvert, $bSetLog = True)
 			$iSecond = Number($aResult[0])
 		EndIf
 
-		$iRemainTimer = Round($iDay * 24 * 60 + $iHour * 60 + $iMinute + $iSecond / 60, 2)
+		$iRemainTimer = Round($iDay * 24 * 60 + $iHour * 60 + $iMinute + $iSecond / 60, 0)
 		If $iRemainTimer = 0 And $g_bDebugSetlog Then SetDebugLog($WhereRead & ": Bad OCR string", $COLOR_ERROR)
 
 		If $bSetLog Then SetLog($WhereRead & " time: " & StringFormat("%.2f", $iRemainTimer) & " min", $COLOR_INFO)

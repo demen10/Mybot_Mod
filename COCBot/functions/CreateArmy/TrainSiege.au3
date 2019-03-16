@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........: ProMac(07-2018)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -29,15 +29,16 @@ Func TrainSiege()
 	Local $aCheckIsFilled[4] = [802, 186, 0xD7AFA9, 10]
 	Local $aCheckIsAvailableSiege[4] = [58, 556, 0x47717E, 10]
 	Local $aCheckIsAvailableSiege1[4] = [229, 556, 0x47717E, 10]
+	Local $aCheckIsAvailableSiege2[4] = [400, 556, 0x47717E, 10]
 
-	Local $ToMake[2], $g_aiQueuedSiege[2]
+	Local $ToMake[3], $g_aiQueuedSiege[3]
 
 	; $ToMake[$eSiegeWallWrecker] = $g_aiArmyCompSiegeMachine[$eSiegeWallWrecker] - ($g_aiCurrentSiegeMachines[$eSiegeWallWrecker] + $g_aiCurrentCCSiegeMachines[$eSiegeWallWrecker] + $g_aiQueuedSiege[$eSiegeWallWrecker])
 	; $ToMake[$eSiegeBattleBlimp] = $g_aiArmyCompSiegeMachine[$eSiegeBattleBlimp] - ($g_aiCurrentSiegeMachines[$eSiegeBattleBlimp] + $g_aiCurrentCCSiegeMachines[$eSiegeBattleBlimp]+ $g_aiQueuedSiege[$eSiegeBattleBlimp])
 	; If $g_abChkDonateTroop[$eTroopCount + $g_iCustomDonateConfigs + $eSiegeWallWrecker] ; Donate WallWrecker
 	; If $g_abChkDonateTroop[$eTroopCount + $g_iCustomDonateConfigs + $eSiegeBattleBlimp] ; Donate BattleBlimp
 
-	Local $TextToUse = ["Clan Castle", $g_asSiegeMachineNames[0], $g_asSiegeMachineNames[1]]
+	Local $TextToUse = ["Clan Castle", $g_asSiegeMachineNames[0], $g_asSiegeMachineNames[1], $g_asSiegeMachineNames[2]]
 
 	If $g_bDebugSetlogTrain Then
 		For $iSiegeIndex = $eSiegeWallWrecker To $eSiegeMachineCount - 1
@@ -56,7 +57,10 @@ Func TrainSiege()
 		For $iSiegeIndex = $eSiegeWallWrecker To $eSiegeMachineCount - 1
 			If $g_aiArmyCompSiegeMachine[$iSiegeIndex] = 0 Then ContinueLoop
 			; Check if is available to make
-			Local $checkPixel = $iSiegeIndex = $eSiegeWallWrecker ? $aCheckIsAvailableSiege : $aCheckIsAvailableSiege1
+			Local $checkPixel
+            If $iSiegeIndex = $eSiegeWallWrecker Then $checkPixel = $aCheckIsAvailableSiege
+            If $iSiegeIndex = $eSiegeBattleBlimp Then $checkPixel = $aCheckIsAvailableSiege1
+            If $iSiegeIndex = $eSiegeStoneSlammer Then $checkPixel = $aCheckIsAvailableSiege2
 			If _CheckPixel($checkPixel, True, Default, $g_asSiegeMachineNames[$iSiegeIndex]) Then
 				; ::: Just making the Siege to use :::
 				If ($g_aiAttackUseSiege[$DB] = $iSiegeIndex + 1 Or $g_aiAttackUseSiege[$LB] = $iSiegeIndex + 1) And $g_aiCurrentCCSiegeMachines[$iSiegeIndex] = 0 Then
@@ -74,7 +78,7 @@ Func TrainSiege()
 			If $aSearchResult[0][0] <> "" Then
 				For $i = 0 To UBound($aSearchResult) - 1
 					Local $tempSiege = TroopIndexLookup($aSearchResult[$i][0])
-					Setlog("- " & NameOfTroop($tempSiege) & " Queued.", $COLOR_INFO)
+					Setlog("- " & GetTroopName($tempSiege) & " Queued.", $COLOR_INFO)
 				Next
 			EndIf
 
@@ -96,7 +100,10 @@ Func TrainSiege()
 			If $g_aiArmyCompSiegeMachine[$iSiegeIndex] = 0 Then ContinueLoop
 			If $g_aiCurrentSiegeMachines[$iSiegeIndex] < $g_aiArmyCompSiegeMachine[$iSiegeIndex] Then
 				Local $HowMany = $g_aiArmyCompSiegeMachine[$iSiegeIndex] - $g_aiCurrentSiegeMachines[$iSiegeIndex]
-				Local $checkPixel = $iSiegeIndex = $eSiegeWallWrecker ? $aCheckIsAvailableSiege : $aCheckIsAvailableSiege1
+				Local $checkPixel
+                If $iSiegeIndex = $eSiegeWallWrecker Then $checkPixel = $aCheckIsAvailableSiege
+                If $iSiegeIndex = $eSiegeBattleBlimp Then $checkPixel = $aCheckIsAvailableSiege1
+                If $iSiegeIndex = $eSiegeStoneSlammer Then $checkPixel = $aCheckIsAvailableSiege2
 				If _CheckPixel($checkPixel, True, Default, $g_asSiegeMachineNames[$iSiegeIndex]) Then
 					PureClick($checkPixel[0], $checkPixel[1], $HowMany, $g_iTrainClickDelay)
 					Local $sSiegeName = $HowMany >= 2 ? $g_asSiegeMachineNames[$iSiegeIndex] & "s" : $g_asSiegeMachineNames[$iSiegeIndex] & ""

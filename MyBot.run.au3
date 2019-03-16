@@ -3,7 +3,7 @@
 ; Description ...: This file contains the initialization and main loop sequences f0r the MBR Bot
 ; Author ........:  (2014)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -133,6 +133,7 @@ Func InitializeBot()
 
 	_Crypt_Startup()
 	__GDIPlus_Startup() ; Start GDI+ Engine (incl. a new thread)
+	TCPStartup() ; Start the TCP service.
 
 	;InitAndroidConfig()
 	CreateMainGUI() ; Just create the main window
@@ -210,6 +211,8 @@ Func ProcessCommandLine()
 					$g_iGuiMode = 0
 				Case "/hideandroid", "/ha", "-hideandroid", "-ha"
 					$g_bBotLaunchOption_HideAndroid = True
+				Case "/minimizebot", "/minbot", "/mb", "-minimizebot", "-minbot", "-mb"
+					$g_bBotLaunchOption_MinimizeBot = True
 				Case "/console", "/c", "-console", "-c"
 					$g_iBotLaunchOption_Console = True
 					ConsoleWindow()
@@ -247,6 +250,7 @@ Func ProcessCommandLine()
 		$g_sProfileCurrentName = StringRegExpReplace($g_asCmdLine[1], '[/:*?"<>|]', '_')
 		If $g_asCmdLine[0] >= 2 Then
 			If StringInStr($g_asCmdLine[2], "BlueStacks3") Then $g_asCmdLine[2] = "BlueStacks2"
+			If StringInStr($g_asCmdLine[2], "BlueStacks4") Then $g_asCmdLine[2] = "BlueStacks2"
 		EndIf
 	ElseIf FileExists($g_sProfilePath & "\profile.ini") Then
 		$g_sProfileCurrentName = StringRegExpReplace(IniRead($g_sProfilePath & "\profile.ini", "general", "defaultprofile", ""), '[/:*?"<>|]', '_')
@@ -618,6 +622,13 @@ Func MainLoop($bCheckPrerequisitesOK = True)
 		$g_iBotAction = $eBotStart
 		; check if android should be hidden
 		If $g_bBotLaunchOption_HideAndroid Then $g_bIsHidden = True
+		; check if bot should be minimized
+		If $g_bBotLaunchOption_MinimizeBot Then BotMinimizeRequest()
+	EndIf
+
+	If $bCheckPrerequisitesOK Then
+		; only when bot can run, register with forum
+		ForumAuthentication()
 	EndIf
 
 	Local $hStarttime = _Timer_Init()
@@ -888,24 +899,6 @@ Func _Idle() ;Sequence that runs until Full Army
 		If _Sleep($DELAYIDLE1) Then Return
 		If $g_iCommandStop = -1 Then SetLog("====== Waiting for full army ======", $COLOR_SUCCESS)
 		Local $hTimer = __TimerInit()
-		Local $iReHere = 0, $bNoCheckRedChatIcon = True
-
-		If $g_iActiveDonate And $g_bChkDonate Then
-			Local $aHeroResult = CheckArmyCamp(True, True, True, False)
-			While $iReHere < 7
-				If Not $g_bRunState Then Return
-				$iReHere += 1
-				If ($g_iCommandStop = 3 Or $g_iCommandStop = 0) Then $bNoCheckRedChatIcon = ($iReHere = 1) ? False : True ; Just to force once to open and check Donations when is Halt mode
-				If $iReHere = 1 And SkipDonateNearFullTroops(True, $aHeroResult) = False And BalanceDonRec(True) Then
-					DonateCC($bNoCheckRedChatIcon)
-				ElseIf SkipDonateNearFullTroops(False, $aHeroResult) = False And BalanceDonRec(False) Then
-					DonateCC($bNoCheckRedChatIcon)
-				EndIf
-				If _Sleep($DELAYIDLE2) Then ExitLoop
-				If $g_bRestart = True Then ExitLoop
-				If CheckAndroidReboot() Then ContinueLoop 2
-			WEnd
-		EndIf
 		If _Sleep($DELAYIDLE1) Then ExitLoop
 		checkObstacles() ; trap common error messages also check for reconnecting animation
 		checkMainScreen(False) ; required here due to many possible exits
@@ -962,7 +955,7 @@ Func _Idle() ;Sequence that runs until Full Army
 		If $g_iCommandStop = 0 And $g_bTrainEnabled = True Then
 			If Not ($g_bIsFullArmywithHeroesAndSpells) Then
 				If $g_iActualTrainSkip < $g_iMaxTrainSkip Then
-					If CheckNeedOpenTrain($g_sTimeBeforeTrain) Then TrainSystem()
+					If CheckNeedOpenTrain($g_sTimeBeforeTrain) Or (ProfileSwitchAccountEnabled() And $g_iActiveDonate And $g_bChkDonate) Then TrainSystem() ; force check trainsystem after donate and before switch account
 					If $g_bRestart = True Then ExitLoop
 					If _Sleep($DELAYIDLE1) Then ExitLoop
 					checkMainScreen(False)
@@ -1218,16 +1211,24 @@ Func _RunFunction($action)
 			_Sleep($DELAYRUNBOT3)
 		Case "BuilderBase"
 			If isOnBuilderBase() Or (($g_bChkCollectBuilderBase Or $g_bChkStartClockTowerBoost Or $g_iChkBBSuggestedUpgrades) And SwitchBetweenBases()) Then
-				CollectBuilderBase()
 				BuilderBaseReport()
+				CollectBuilderBase()
+				_Sleep($DELAYRUNBOT3)
 				StartClockTowerBoost()
+				_Sleep($DELAYRUNBOT3)
+				StarLaboratory()
+				_Sleep($DELAYRUNBOT3)
+				CleanBBYard()
+				_Sleep($DELAYRUNBOT3)
 				MainSuggestedUpgradeCode()
 				; switch back to normal village
+				BuilderBaseReport()
 				SwitchBetweenBases()
 			EndIf
 			_Sleep($DELAYRUNBOT3)
 		Case "CollectFreeMagicItems"
 			CollectFreeMagicItems()
+			_Sleep($DELAYRUNBOT3)
 		Case ""
 			SetDebugLog("Function call doesn't support empty string, please review array size", $COLOR_ERROR)
 		Case Else

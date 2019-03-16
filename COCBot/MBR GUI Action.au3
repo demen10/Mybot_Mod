@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........: cosote (2016)
 ; Modified ......: CodeSlinger69 (2017)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -35,7 +35,6 @@ Func BotStart($bAutostartDelay = 0)
 	$g_bMeetCondStop = False
 	$g_bIsClientSyncError = False
 	$g_bDisableBreakCheck = False ; reset flag to check for early warning message when bot start/restart in case user stopped in middle
-	$g_bDisableDropTrophy = False ; Reset Disabled Drop Trophy because the user has no Tier 1 or 2 Troops
 
 	If Not $g_bSearchMode Then
 		If $g_hLogFile = 0 Then CreateLogFile() ; only create new log file when doesn't exist yet
@@ -151,7 +150,9 @@ Func BotStop()
 
 	;DistributorsUpdateGUI()
 	AndroidBotStopEvent() ; signal android that bot is now stopping
-	AndroidAdbTerminateShellInstance() ; terminate shell instance
+	If $g_bTerminateAdbShellOnStop Then
+		AndroidAdbTerminateShellInstance() ; terminate shell instance
+	EndIf
 	AndroidShield("btnStop", Default)
 
 	EnableControls($g_hFrmBotBottom, Default, $g_aFrmBotBottomCtrlState)

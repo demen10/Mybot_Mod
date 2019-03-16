@@ -6,7 +6,7 @@
 ; Return values .: None
 ; Author ........: GkevinOD (2014)
 ; Modified ......: Hervidero (2015), kaganus (08-2015), CodeSlinger69 (01-2017)
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -366,7 +366,27 @@ Func GUIControl_WM_MOUSE($hWin, $iMsg, $wParam, $lParam)
 		SetCriticalMessageProcessing($wasCritical)
 		Return $GUI_RUNDEFMSG
 	EndIf
-	If $iMsg <> $WM_MOUSEMOVE Or $g_iAndroidEmbedMode <> 0 Then
+
+	Local $bMinitouch = True
+	If $bMinitouch Then
+		Static $s_x, $s_y
+		Local $iBytesSent = 0
+		Switch $iMsg
+			Case $WM_MOUSEMOVE
+				If $s_x <> $x Or $s_y <> $y Then
+					$iBytesSent = Minitouch($x, $y, 0)
+				EndIf
+			Case $WM_LBUTTONDOWN
+				$iBytesSent = Minitouch($x, $y, 1)
+			Case $WM_LBUTTONUP
+				$iBytesSent = Minitouch($x, $y, 2)
+		EndSwitch
+		$bMinitouch = ($iBytesSent > 0)
+		$s_x = $x
+		$s_y = $y
+	EndIf
+
+	If Not $bMinitouch And ($iMsg <> $WM_MOUSEMOVE Or $g_iAndroidEmbedMode <> 0) Then
 		; not all message got thru here, so disabled
 		;$x += $g_aiMouseOffset[0]
 		;$y += $g_aiMouseOffset[1]
@@ -565,6 +585,8 @@ Func GUIControl_WM_COMMAND($hWind, $iMsg, $wParam, $lParam)
 		Case $g_hBtnTestTHimgloc
 			imglocTHSearch()
 		Case $g_hBtnTestAttackCSV
+			btnTestAttackCSV()
+		Case $g_hBtnTestArmyWindow
 			Local $RuntimeA = $g_bRunState
 			$g_bRunState = True
 			Setlog("Army Window Test")
@@ -1038,6 +1060,7 @@ Func BotShrinkExpandToggleExecute()
 	;_SendMessage($g_hFrmBotBottom, $WM_SETREDRAW, False, 0)
 	GUISetState(@SW_HIDE, $g_hFrmBotEx)
 	GUISetState(@SW_HIDE, $g_hFrmBotBottom)
+
 	Local $iSteps = 10
 	Local $fStep = $_GUI_MAIN_WIDTH / $iSteps
 	Local $bGetAnimationSpeed = True
@@ -1324,6 +1347,7 @@ Func BotClose($SaveConfig = Default, $bExit = True)
 	_Crypt_Shutdown()
 	_GUICtrlRichEdit_Destroy($g_hTxtLog)
 	_GUICtrlRichEdit_Destroy($g_hTxtAtkLog)
+	TCPShutdown() ; Close the TCP service.
 
 	_WinAPI_DeregisterShellHookWindow($g_hFrmBot)
 	If $g_hAndroidWindow <> 0 Then ControlFocus($g_hAndroidWindow, "", $g_hAndroidWindow) ; show Android in taskbar again
@@ -1494,7 +1518,7 @@ EndFunc   ;==>tiExit
 ; Return values .: Boolean of former redraw state
 ; Author ........: Cosote (2015)
 ; Modified ......:
-; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2018
+; Remarks .......: This file is part of MyBot, previously known as ClashGameBot. Copyright 2015-2019
 ;                  MyBot is distributed under the terms of the GNU GPL
 ; Related .......:
 ; Link ..........: https://github.com/MyBotRun/MyBot/wiki
@@ -1623,7 +1647,7 @@ EndFunc   ;==>ControlRedraw
 Func SetTime($bForceUpdate = False)
 	If $g_hTimerSinceStarted = 0 Then Return ; GIGO, no setTime when timer hasn't started yet
 	Local $day = 0, $hour = 0, $min = 0, $sec = 0
-	If GUICtrlRead($g_hGUI_STATS_TAB, 1) = $g_hGUI_STATS_TAB_ITEM2 Or $bForceUpdate = True Then
+	If (GUICtrlRead($g_hGUI_STATS_TAB, 1) = $g_hGUI_STATS_TAB_ITEM2 And GUICtrlRead($g_hGUI_BOT_TAB, 1) = $g_hGUI_BOT_TAB_ITEM5 And GUICtrlRead($g_hTabMain, 1) = $g_hTabBot) Or $bForceUpdate = True Then
 		_TicksToDay(Int(__TimerDiff($g_hTimerSinceStarted) + $g_iTimePassed), $day, $hour, $min, $sec)
 		GUICtrlSetData($g_hLblResultRuntime, $day > 0 ? StringFormat("%2u Day(s) %02i:%02i:%02i", $day, $hour, $min, $sec) : StringFormat("%02i:%02i:%02i", $hour, $min, $sec))
 	EndIf
@@ -1632,8 +1656,20 @@ Func SetTime($bForceUpdate = False)
 		GUICtrlSetData($g_hLblResultRuntimeNow, StringFormat("%02i:%02i:%02i", $hour, $min, $sec))
 	EndIf
 
+	If _DateIsValid($g_sLabUpgradeTime) Then
+		Local $iLabTime = _DateDiff("s", _NowCalc(), $g_sLabUpgradeTime) * 1000
+		If $iLabTime > 0 Then
+			_TicksToDay($iLabTime, $day, $hour, $min, $sec)
+			GUICtrlSetData($g_hLbLLabTime, $day > 0 ? StringFormat("%2ud %02i:%02i'", $day, $hour, $min) : StringFormat("%02i:%02i:%02i", $hour, $min, $sec))
+			GUICtrlSetColor($g_hLbLLabTime, $day > 0 ? $COLOR_GREEN : $COLOR_ORANGE)
+		Else
+			GUICtrlSetData($g_hLbLLabTime, "")
+			$g_sLabUpgradeTime = ""
+		EndIf
+	EndIf
+
 	If ProfileSwitchAccountEnabled() Then
-		If GUICtrlRead($g_hGUI_STATS_TAB, 1) = $g_hGUI_STATS_TAB_ITEM5 Or $bForceUpdate Then
+		If GUICtrlRead($g_hGUI_STATS_TAB, 1) = $g_hGUI_STATS_TAB_ITEM5 And GUICtrlRead($g_hGUI_BOT_TAB, 1) = $g_hGUI_BOT_TAB_ITEM5 And GUICtrlRead($g_hTabMain, 1) = $g_hTabBot Then
 			_TicksToTime(Int(__TimerDiff($g_ahTimerSinceSwitched[$g_iCurAccount]) + $g_aiRunTime[$g_iCurAccount]), $hour, $min, $sec)
 			GUICtrlSetData($g_ahLblResultRuntimeNowAcc[$g_iCurAccount], StringFormat("%02i:%02i:%02i", $hour, $min, $sec))
 			For $i = 0 To $g_iTotalAcc
@@ -1648,8 +1684,9 @@ Func SetTime($bForceUpdate = False)
 					Else
 						GUICtrlSetColor($g_ahLblTroopTime[$i], $COLOR_BLACK)
 					EndIf
-			   EndIf
+				EndIf
 			Next
+			SwitchAccountVariablesReload("SetTime")
 		EndIf
 	EndIf
 EndFunc   ;==>SetTime
