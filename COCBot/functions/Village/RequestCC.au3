@@ -15,9 +15,19 @@
 
 Func RequestCC($bClickPAtEnd = True, $sText = "")
 
-    ; Request troops for defense (Demen)
+ 	If (Not $g_bRequestTroopsEnable Or Not $g_bDonationEnabled) And (Not $g_bRequestCCDefense) Then
+		Return
+	Else
+		Local $hour = StringSplit(_NowTime(4), ":", $STR_NOCOUNT)
+		If $g_abRequestCCHours[$hour[0]] = False Then
+			SetLog("Request Clan Castle troops not planned, Skipped..", $COLOR_ACTION)
+			Return ; exit func if no planned donate checkmarks
+		EndIf
+	EndIf
+
+	; Request troops for defense (Demen)
     Local $bRequestDefense = False
-    If $g_bRequestCCDefense And $g_bCanRequestCC Then
+    If $g_bRequestCCDefense Then
 		Local $sTime = $g_bRequestCCDefenseWhenPB ? $g_sPBStartTime : $g_asShieldStatus[2]
 
 		If Not $g_bRequestCCDefenseWhenPB And $g_asShieldStatus[0] = "none" Then
@@ -41,32 +51,26 @@ Func RequestCC($bClickPAtEnd = True, $sText = "")
 			$g_abRequestType[1] = False
 			$g_abRequestType[2] = False
 			$g_iRequestCountCCTroop = 0
+			$g_aiClanCastleTroopWaitType = $g_aiClanCastleTroopDefType
+			SetDebugLog("    Expecting troops (" & _ArrayToString($g_aiClanCastleTroopWaitType)& "):")
 			For $i = 0 To $eTroopCount - 1
 				$g_aiCCTroopsExpected[$i] = $g_aiCCTroopsExpectedForDef[$i]
-				If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("    Expecting: " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
+				If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("      - " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
 			Next
 
         ElseIf $g_sRequestTroopsText = $g_sRequestCCDefenseText Then
             SetDebugLog("Reloading offense CC request variable: ")
 			ReadConfig_600_11()
             SetDebugLog("    $g_sRequestTroopsText: " & $g_sRequestTroopsText)
+			SetDebugLog("    $g_abRequestType: " & _ArrayToString($g_abRequestType))
+			SetDebugLog("    Expecting troops (" & _ArrayToString($g_aiClanCastleTroopWaitType)& "):")
 			If $g_abRequestType[0] Or _ArrayMin($g_aiClanCastleTroopWaitType) < $eTroopCount Then
 				For $i = 0 To $eTroopCount - 1
-					If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("    Expecting: " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
+					If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("      - " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
 				Next
 			EndIf
         EndIf
     EndIf
-
-	If (Not $g_bRequestTroopsEnable Or Not $g_bDonationEnabled) And Not $bRequestDefense Then Return
-
-    If $g_bRequestTroopsEnable Or $bRequestDefense Then
-		Local $hour = StringSplit(_NowTime(4), ":", $STR_NOCOUNT)
-		If $g_abRequestCCHours[$hour[0]] = False Then
-			SetLog("Request Clan Castle troops not planned, Skipped..", $COLOR_ACTION)
-			Return ; exit func if no planned donate checkmarks
-		EndIf
-	EndIf
 
 	;open army overview
 	If $sText <> "IsFullClanCastle" And Not OpenArmyOverview(True, "RequestCC()") Then Return
