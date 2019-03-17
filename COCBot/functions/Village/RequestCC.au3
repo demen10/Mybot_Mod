@@ -15,11 +15,52 @@
 
 Func RequestCC($bClickPAtEnd = True, $sText = "")
 
-	If Not $g_bRequestTroopsEnable Or Not $g_bDonationEnabled Then
-		Return
-	EndIf
+    ; Request troops for defense (Demen)
+    Local $bRequestDefense = False
+    If $g_bRequestCCDefense And $g_bCanRequestCC Then
+		Local $sTime = $g_bRequestCCDefenseWhenPB ? $g_sPBStartTime : $g_asShieldStatus[2]
 
-	If $g_bRequestTroopsEnable Then
+		If Not $g_bRequestCCDefenseWhenPB And $g_asShieldStatus[0] = "none" Then
+			$bRequestDefense = True
+            SetLog("No shield! Request troops for defense", $COLOR_INFO)
+		ElseIf _DateIsValid($sTime) Then
+			Local $iTime = Int(_DateDiff('n', _NowCalc(), $sTime)) ; time till P.Break or Guard expiry (in minutes)
+			If Not $g_bRequestCCDefenseWhenPB And $g_asShieldStatus[0] = "shield" Then $iTime += 30 ; add 30 minutes guard time
+			SetDebugLog(($g_bRequestCCDefenseWhenPB ? "Personal Break time: " : "Guard time: ") & $sTime & "(" & $iTime & " minutes)")
+			If $iTime <= $g_iRequestDefenseTime Then
+				SetLog(($g_bRequestCCDefenseWhenPB ? "P.Break is about to come!" : "Guard is about to expire!") & " Request troops for defense", $COLOR_INFO)
+				$bRequestDefense = True
+			EndIf
+		EndIf
+
+        If $bRequestDefense Then
+            SetDebugLog("Loading defense CC request variable: ")
+            $g_sRequestTroopsText = $g_sRequestCCDefenseText
+            SetDebugLog("    $g_sRequestTroopsText: " & $g_sRequestTroopsText)
+			$g_abRequestType[0] = True ; enable request troops
+			$g_abRequestType[1] = False
+			$g_abRequestType[2] = False
+			$g_iRequestCountCCTroop = 0
+			For $i = 0 To $eTroopCount - 1
+				$g_aiCCTroopsExpected[$i] = $g_aiCCTroopsExpectedForDef[$i]
+				If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("    Expecting: " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
+			Next
+
+        ElseIf $g_sRequestTroopsText = $g_sRequestCCDefenseText Then
+            SetDebugLog("Reloading offense CC request variable: ")
+			ReadConfig_600_11()
+            SetDebugLog("    $g_sRequestTroopsText: " & $g_sRequestTroopsText)
+			If $g_abRequestType[0] Or _ArrayMin($g_aiClanCastleTroopWaitType) < $eTroopCount Then
+				For $i = 0 To $eTroopCount - 1
+					If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("    Expecting: " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
+				Next
+			EndIf
+        EndIf
+    EndIf
+
+	If (Not $g_bRequestTroopsEnable Or Not $g_bDonationEnabled) And Not $bRequestDefense Then Return
+
+    If $g_bRequestTroopsEnable Or $bRequestDefense Then
 		Local $hour = StringSplit(_NowTime(4), ":", $STR_NOCOUNT)
 		If $g_abRequestCCHours[$hour[0]] = False Then
 			SetLog("Request Clan Castle troops not planned, Skipped..", $COLOR_ACTION)
