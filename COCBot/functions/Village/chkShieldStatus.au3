@@ -76,7 +76,7 @@ Func chkShieldStatus($bChkShield = True, $bForceChkPBT = False)
 		EndIf
 	EndIf
 
-	If $g_bForceSinglePBLogoff = False Then Return ; return if force single PB feature not enabled.
+	If Not $g_bForceSinglePBLogoff And Not $g_bRequestCCDefense Then Return ; return if force single PB feature And RequestCC Defense are both not enabled.
 
 	If _DateIsValid($g_sPBStartTime) Then
 		$ichkPBTime = Int(_DateDiff('s', $g_sPBStartTime, _NowCalc())) ; compare existing shield date/time to now.
