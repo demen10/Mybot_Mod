@@ -487,6 +487,8 @@ Func ReadConfig_600_11()
     $g_sRequestCCDefenseText = IniRead($g_sProfileConfigPath, "donate", "RequestDefenseText", "")
 	$g_bRequestCCDefenseWhenPB = (IniRead($g_sProfileConfigPath, "donate", "RequestDefenseWhenPB", "1") = "1")
     $g_iRequestDefenseTime = Int(IniRead($g_sProfileConfigPath, "donate", "RequestDefenseTime", "0"))
+    $g_bSaveCCTroopForDefense = (IniRead($g_sProfileConfigPath, "donate", "SaveCCTroopForDefense", "0") = "1")
+
 	For $i = 0 To $eTroopCount - 1
 		$g_aiCCTroopsExpectedForDef[$i] = 0
 	Next

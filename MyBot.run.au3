@@ -1251,6 +1251,8 @@ Func FirstCheck()
 	VillageReport()
 	If Not $g_bRunState Then Return
 
+	If $g_bRequestCCDefense Then chkShieldStatus() ; get global values for $g_asShieldStatus and $g_sPBStartTime. This is to avoid removing defense CC when it checks IsFullClanCastle()
+
 	If $g_bOutOfGold = True And (Number($g_aiCurrentLoot[$eLootGold]) >= Number($g_iTxtRestartGold)) Then ; check if enough gold to begin searching again
 		$g_bOutOfGold = False ; reset out of gold flag
 		SetLog("Switching back to normal after no gold to search ...", $COLOR_SUCCESS)

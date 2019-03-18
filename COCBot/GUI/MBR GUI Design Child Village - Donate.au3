@@ -27,7 +27,7 @@ Global $g_hTxtRequestCountCCTroop, $g_hTxtRequestCountCCSpell, $g_hChkClanCastle
 Global $g_ahCmbClanCastleTroop[3], $g_ahTxtClanCastleTroop[3]
 Global $g_ahCmbClanCastleSpell[3], $g_ahCmbClanCastleSiege[2]
 ; Request CC Defense (Demen)
-Global $g_hChkRequestCCDefense, $g_hTxtRequestCCDefense, $g_hCmbRequestCCDefenseWhen, $g_hTxtRequestCCDefenseTime
+Global $g_hChkRequestCCDefense, $g_hTxtRequestCCDefense, $g_hCmbRequestCCDefenseWhen, $g_hTxtRequestCCDefenseTime, $g_hChkSaveCCTroopForDefense
 Global $g_ahCmbClanCastleTroopDef[3], $g_ahTxtClanCastleTroopDef[3]
 Global $g_hLblOnlyDuringHours
 
@@ -205,6 +205,9 @@ Func CreateRequestSubTab()
         $g_hTxtRequestCCDefenseTime = GUICtrlCreateInput("30", $x + 166, $y + 40, 28, 21, $SS_CENTER)
             GUICtrlSetLimit(-1, 3)
             GUICtrlSetBkColor(-1, $COLOR_MONEYGREEN)
+		$g_hChkSaveCCTroopForDefense = GUICtrlCreateCheckbox("Save CC troops for defense", $x, $y + 62)
+			GUICtrlSetState(-1, $GUI_CHECKED)
+			_GUICtrlSetTip(-1, "Not dropping CC troops in attack to save for defense")
 
 	$x += 245
 		GUICtrlCreateLabel(GetTranslatedFileIni("MBR GUI Design Child Village - Donate-CC", "lblOnlyTake", "Only take"), $x, $y)
@@ -222,7 +225,7 @@ Func CreateRequestSubTab()
 		Next
 
 	$x -= 245
-	$y += 90
+	$y += 95
 		$g_hLblOnlyDuringHours = GUICtrlCreateLabel(GetTranslatedFileIni("MBR Global GUI Design", "Only_during_hours", "Only during these hours of each day"), $x, $y, 300, 20, $BS_MULTILINE)
 
 	$x += 40

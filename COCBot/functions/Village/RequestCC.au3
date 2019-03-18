@@ -48,6 +48,12 @@ Func IsRequestDefense()
 			$g_aiCCTroopsExpected[$i] = $g_aiCCTroopsExpectedForDef[$i]
 			If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("      - " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
 		Next
+		If $g_bSaveCCTroopForDefense Then
+			For $i = 0 To $g_iModeCount
+				If $g_abAttackDropCC[$i] Then $g_abAttackDropCC[$i] = False
+			Next
+			SetDebugLog("    Disable $g_abAttackDropCC (" & _ArrayToString($g_abAttackDropCC)& ")")
+		EndIf
 
 	ElseIf $g_sRequestTroopsText = $g_sRequestCCDefenseText Then
 		SetDebugLog("Reloading offense CC request variable: ")
@@ -60,6 +66,12 @@ Func IsRequestDefense()
 				If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("      - " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
 			Next
 		EndIf
+		If $g_bSaveCCTroopForDefense Then
+			IniReadS($g_abAttackDropCC[$DB], $g_sProfileConfigPath, "attack", "DBDropCC", False, "Bool") ; ReadConfig_600_29_DB()
+			IniReadS($g_abAttackDropCC[$LB], $g_sProfileConfigPath, "attack", "ABDropCC", False, "Bool") ;ReadConfig_600_29_LB()
+			SetDebugLog("    Reloading $g_abAttackDropCC (" & _ArrayToString($g_abAttackDropCC)& ")")
+		EndIf
+
 	EndIf
 	Return $bRequestDefense
 EndFunc   ;==>IsRequestDefense
