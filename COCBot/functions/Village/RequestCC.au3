@@ -49,7 +49,7 @@ Func IsRequestDefense()
 			If $g_aiCCTroopsExpected[$i] > 0 Then SetDebugLog("      - " & $g_asTroopNames[$i] & " x" & $g_aiCCTroopsExpected[$i])
 		Next
 		If $g_bSaveCCTroopForDefense Then
-			For $i = 0 To $g_iModeCount
+			For $i = 0 To $g_iModeCount - 1
 				If $g_abAttackDropCC[$i] Then $g_abAttackDropCC[$i] = False
 			Next
 			SetDebugLog("    Disable $g_abAttackDropCC (" & _ArrayToString($g_abAttackDropCC)& ")")
