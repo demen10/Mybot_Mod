@@ -71,8 +71,6 @@ Func _ControlClick($x, $y)
 		$y += $g_aiBSrpos[1]
 	EndIf
 	If $g_iAndroidControlClickMode = 0 Then
-		Opt("MouseClickDelay", $g_iAndroidControlClickDelay) ;Default: 10 milliseconds
-		Opt("MouseClickDownDelay", $g_iAndroidControlClickDownDelay) ;Default: 2 milliseconds
 		Return ControlClick($hWin, "", "", "left", "1", $x, $y)
 	EndIf
 	Local $WM_LBUTTONDOWN = 0x0201, $WM_LBUTTONUP = 0x0202
@@ -328,7 +326,7 @@ Func _DecodeDebug($message)
 		Case "#0343"
 			Return $separator & "Train - Train Miner"
 		Case "#0344"
-			Return $separator & "Train - Train Ice Golem"	
+			Return $separator & "Train - Train Ice Golem"
 
 			;DONATE
 		Case "#0168"
@@ -357,19 +355,6 @@ Func _DecodeDebug($message)
 			Return $separator & "Profile - Profile Button"
 		Case "#0223"
 			Return $separator & "Profile - Close Page"
-			;REARM
-		Case "#0225"
-			Return $separator & "Rearm - Click Town Hall"
-		Case "#0326", "#0228"
-			Return $separator & "Rearm - Click Rearm Button"
-		Case "#0226", "#0229"
-			Return $separator & "Rearm - Click Rearm"
-		Case "#0227", "#0230", "#0233"
-			Return $separator & "Rearm - Close Gem Spend Window"
-		Case "#0231"
-			Return $separator & "Rearm - Click Inferno Button"
-		Case "#0232"
-			Return $separator & "Rearm - Inferno Button"
 			;REQUEST CC
 		Case "#0250"
 			Return $separator & "Request - Click Castle Clan"

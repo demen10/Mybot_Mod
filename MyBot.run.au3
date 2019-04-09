@@ -55,8 +55,8 @@ Opt("GUIEventOptions", 1) ; Handle minimize and restore for dock android support
 Opt("GUICloseOnESC", 0) ; Don't send the $GUI_EVENT_CLOSE message when ESC is pressed.
 Opt("WinTitleMatchMode", 3) ; Window Title exact match mode
 Opt("GUIOnEventMode", 1)
-Opt("MouseClickDelay", 10)
-Opt("MouseClickDownDelay", 10)
+Opt("MouseClickDelay", $g_iAndroidControlClickDelay) ;Default: 10 milliseconds
+Opt("MouseClickDownDelay", $g_iAndroidControlClickDownDelay) ;Default: 2 milliseconds
 Opt("TrayMenuMode", 3)
 Opt("TrayOnEventMode", 1)
 
@@ -249,8 +249,10 @@ Func ProcessCommandLine()
 	If $g_asCmdLine[0] > 0 Then
 		$g_sProfileCurrentName = StringRegExpReplace($g_asCmdLine[1], '[/:*?"<>|]', '_')
 		If $g_asCmdLine[0] >= 2 Then
-			If StringInStr($g_asCmdLine[2], "BlueStacks3") Then $g_asCmdLine[2] = "BlueStacks2"
-			If StringInStr($g_asCmdLine[2], "BlueStacks4") Then $g_asCmdLine[2] = "BlueStacks2"
+			If StringInStr($g_asCmdLine[2], "BlueStacks3") Or StringInStr($g_asCmdLine[2], "BlueStacks4") Then
+				; BlueStacks v3 and v4 use same key as v2
+				$g_asCmdLine[2] = "BlueStacks2"
+			EndIf
 		EndIf
 	ElseIf FileExists($g_sProfilePath & "\profile.ini") Then
 		$g_sProfileCurrentName = StringRegExpReplace(IniRead($g_sProfilePath & "\profile.ini", "general", "defaultprofile", ""), '[/:*?"<>|]', '_')
@@ -478,6 +480,19 @@ EndFunc   ;==>InitializeMBR
 ; ===============================================================================================================================
 Func SetupFilesAndFolders()
 
+	;Migrate old shared_prefs locations
+	Local $sOldProfiles = @MyDocumentsDir & "\MyBot.run-Profiles"
+	If FileExists($sOldProfiles) = 1 And FileExists($g_sPrivateProfilePath) = 0 Then
+		SetLog("Moving shared_prefs profiles folder...")
+		If DirMove($sOldProfiles, $g_sPrivateProfilePath) = 0 Then
+			SetLog("Error moving folder " & $sOldProfiles, $COLOR_ERROR)
+			SetLog("to new location " & $g_sPrivateProfilePath, $COLOR_ERROR)
+			SetLog("Please resolve manually!", $COLOR_ERROR)
+		Else
+			SetLog("Moved shared_prefs profiles to " & $g_sPrivateProfilePath, $COLOR_SUCCESS)
+		EndIf
+	EndIf
+
 	;DirCreate($sTemplates)
 	DirCreate($g_sProfilePresetPath)
 	DirCreate($g_sPrivateProfilePath & "\" & $g_sProfileCurrentName)
@@ -519,6 +534,7 @@ Func SetupFilesAndFolders()
 	SetDebugLog("$g_sProfilePath = " & $g_sProfilePath)
 	SetDebugLog("$g_sProfileCurrentName = " & $g_sProfileCurrentName)
 	SetDebugLog("$g_sProfileLogsPath = " & $g_sProfileLogsPath)
+
 EndFunc   ;==>SetupFilesAndFolders
 
 ; #FUNCTION# ====================================================================================================================
@@ -537,7 +553,8 @@ EndFunc   ;==>SetupFilesAndFolders
 ; ===============================================================================================================================
 Func FinalInitialization(Const $sAI)
 	; check for VC2010, .NET software and MyBot Files and Folders
-	If CheckPrerequisites(True) Then
+	Local $bCheckPrerequisitesOK = CheckPrerequisites(True)
+	If $bCheckPrerequisitesOK Then
 		MBRFunc(True) ; start MyBot.run.dll, after this point .net is initialized and threads popup all the time
 		setAndroidPID() ; set Android PID
 		SetBotGuiPID() ; set GUI PID
@@ -575,12 +592,20 @@ Func FinalInitialization(Const $sAI)
 		If $g_iGuiPID = @AutoItPID Then
 			SetDebugLog("GUI Process not received, close bot")
 			BotClose()
+			$bCheckPrerequisitesOK = False
 		Else
 			SetDebugLog("Linked to GUI Process " & $g_iGuiPID)
 		EndIf
 	EndIf
 
 	; destroy splash screen here (so we witness the 100% ;)
+	DestroySplashScreen(False)
+	If $bCheckPrerequisitesOK Then
+		; only when bot can run, register with forum
+		ForumAuthentication()
+	EndIf
+
+	; allow now other bots to launch
 	DestroySplashScreen()
 
 	; InitializeVariables();initialize variables used in extrawindows
@@ -624,11 +649,6 @@ Func MainLoop($bCheckPrerequisitesOK = True)
 		If $g_bBotLaunchOption_HideAndroid Then $g_bIsHidden = True
 		; check if bot should be minimized
 		If $g_bBotLaunchOption_MinimizeBot Then BotMinimizeRequest()
-	EndIf
-
-	If $bCheckPrerequisitesOK Then
-		; only when bot can run, register with forum
-		ForumAuthentication()
 	EndIf
 
 	Local $hStarttime = _Timer_Init()
@@ -714,36 +734,36 @@ Func runBot() ;Bot that runs everything in order
 		checkObstacles() ; trap common error messages also check for reconnecting animation
 		If $g_bRestart = True Then ContinueLoop
 
-		If $g_bQuicklyFirstStart = True Then
+		If $g_bQuicklyFirstStart Then
 			$g_bQuicklyFirstStart = False
 		Else
 			$g_bQuickAttack = QuickAttack()
 		EndIf
 
-		If CheckAndroidReboot() = True Then ContinueLoop
-		If $g_bIsClientSyncError = False And $g_bIsSearchLimit = False And ($g_bQuickAttack = False) Then
+		If CheckAndroidReboot() Then ContinueLoop
+		If Not $g_bIsClientSyncError And Not $g_bIsSearchLimit And (Not $g_bQuickAttack) Then
 			If BotCommand() Then btnStop()
 			If _Sleep($DELAYRUNBOT2) Then Return
 
 			checkMainScreen(False)
-			If $g_bRestart = True Then ContinueLoop
+			If $g_bRestart Then ContinueLoop
 			If _Sleep($DELAYRUNBOT3) Then Return
 			VillageReport()
 			If Not $g_bRunState Then Return
-			If $g_bOutOfGold = True And (Number($g_aiCurrentLoot[$eLootGold]) >= Number($g_iTxtRestartGold)) Then ; check if enough gold to begin searching again
+			If $g_bOutOfGold And (Number($g_aiCurrentLoot[$eLootGold]) >= Number($g_iTxtRestartGold)) Then ; check if enough gold to begin searching again
 				$g_bOutOfGold = False ; reset out of gold flag
 				SetLog("Switching back to normal after no gold to search ...", $COLOR_SUCCESS)
 				ContinueLoop ; Restart bot loop to reset $g_iCommandStop & $g_bTrainEnabled + $g_bDonationEnabled via BotCommand()
 			EndIf
-			If $g_bOutOfElixir = True And (Number($g_aiCurrentLoot[$eLootElixir]) >= Number($g_iTxtRestartElixir)) And (Number($g_aiCurrentLoot[$eLootDarkElixir]) >= Number($g_iTxtRestartDark)) Then ; check if enough elixir to begin searching again
+			If $g_bOutOfElixir And (Number($g_aiCurrentLoot[$eLootElixir]) >= Number($g_iTxtRestartElixir)) And (Number($g_aiCurrentLoot[$eLootDarkElixir]) >= Number($g_iTxtRestartDark)) Then ; check if enough elixir to begin searching again
 				$g_bOutOfElixir = False ; reset out of gold flag
 				SetLog("Switching back to normal setting after no elixir to train ...", $COLOR_SUCCESS)
 				ContinueLoop ; Restart bot loop to reset $g_iCommandStop & $g_bTrainEnabled + $g_bDonationEnabled via BotCommand()
 			EndIf
 			If _Sleep($DELAYRUNBOT5) Then Return
 			checkMainScreen(False)
-			If $g_bRestart = True Then ContinueLoop
-			Local $aRndFuncList = ['LabCheck', 'Collect', 'CheckTombs', 'ReArm', 'CleanYard']
+			If $g_bRestart Then ContinueLoop
+			Local $aRndFuncList = ['LabCheck', 'Collect', 'CheckTombs', 'CleanYard']
 			While 1
 				If $g_bRunState = False Then Return
 				If $g_bRestart = True Then ContinueLoop 2 ; must be level 2 due to loop-in-loop
@@ -1034,6 +1054,7 @@ Func AttackMain() ;Main control for attack functions
 			EndIf
 			_ClanGames()
 			ClickP($aAway, 1, 0, "#0000") ;Click Away to prevent any pages on top
+			If $g_bUpdateSharedPrefs Then PullSharedPrefs()
 			PrepareSearch()
 			If Not $g_bRunState Then Return
 			If $g_bOutOfGold = True Then Return ; Check flag for enough gold to search
@@ -1053,8 +1074,8 @@ Func AttackMain() ;Main control for attack functions
 			If _Sleep($DELAYATTACKMAIN2) Then Return
 			Return True
 		Else
-			SetLog("No one of search condition match:", $COLOR_WARNING)
-			SetLog("Waiting on troops, heroes and/or spells according to search settings", $COLOR_WARNING)
+			SetLog("None of search condition match:", $COLOR_WARNING)
+			SetLog("Search, Trophy or Army Camp % are out of range in search setting", $COLOR_WARNING)
 			$g_bIsSearchLimit = False
 			$g_bIsClientSyncError = False
 			$g_bQuickAttack = False
@@ -1139,9 +1160,10 @@ Func _RunFunction($action)
 			_Sleep($DELAYRUNBOT3)
 		Case "CleanYard"
 			CleanYard()
-		Case "ReArm"
-			ReArm()
-			_Sleep($DELAYRUNBOT3)
+; Removed cause of April 2019 CoC update
+;		Case "ReArm"
+;			ReArm()
+;			_Sleep($DELAYRUNBOT3)
 		Case "ReplayShare"
 			ReplayShare($g_bShareAttackEnableNow)
 			_Sleep($DELAYRUNBOT3)
@@ -1211,6 +1233,7 @@ Func _RunFunction($action)
 			_Sleep($DELAYRUNBOT3)
 		Case "BuilderBase"
 			If isOnBuilderBase() Or (($g_bChkCollectBuilderBase Or $g_bChkStartClockTowerBoost Or $g_iChkBBSuggestedUpgrades) And SwitchBetweenBases()) Then
+				$g_bOnBuilderBase = True
 				BuilderBaseReport()
 				CollectBuilderBase()
 				_Sleep($DELAYRUNBOT3)
@@ -1224,6 +1247,7 @@ Func _RunFunction($action)
 				; switch back to normal village
 				BuilderBaseReport()
 				SwitchBetweenBases()
+				$g_bOnBuilderBase = False
 			EndIf
 			_Sleep($DELAYRUNBOT3)
 		Case "CollectFreeMagicItems"

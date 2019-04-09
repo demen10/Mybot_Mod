@@ -15,6 +15,21 @@
 
 Func BotStart($bAutostartDelay = 0)
 	FuncEnter(BotStart)
+
+	If Not $g_bSearchMode Then
+		If $g_hLogFile = 0 Then CreateLogFile() ; only create new log file when doesn't exist yet
+		CreateAttackLogFile()
+		If $g_iFirstRun = -1 Then $g_iFirstRun = 1
+	EndIf
+	SetLogCentered(" BOT LOG ", Default, Default, True)
+
+	If Not ForumAuthentication() Then
+		; not authenticated exit now, but restore controls first
+		EnableControls($g_hFrmBotBottom, Default, $g_aFrmBotBottomCtrlState)
+		SetRedrawBotWindow(True, Default, Default, Default, "BotStart")
+		Return FuncReturn()
+	EndIf
+
 	ResumeAndroid()
 	CleanSecureFiles()
 	CalCostCamp()
@@ -26,6 +41,8 @@ Func BotStart($bAutostartDelay = 0)
 	$g_bSkipFirstZoomout = False
 	$g_bIsSearchLimit = False
 	$g_bIsClientSyncError = False
+	$g_bZoomoutFailureNotRestartingAnything = False
+	$g_bRestart = False
 
 	EnableControls($g_hFrmBotBottom, False, $g_aFrmBotBottomCtrlState)
 	;$g_iFirstAttack = 0
@@ -35,13 +52,6 @@ Func BotStart($bAutostartDelay = 0)
 	$g_bMeetCondStop = False
 	$g_bIsClientSyncError = False
 	$g_bDisableBreakCheck = False ; reset flag to check for early warning message when bot start/restart in case user stopped in middle
-
-	If Not $g_bSearchMode Then
-		If $g_hLogFile = 0 Then CreateLogFile() ; only create new log file when doesn't exist yet
-		CreateAttackLogFile()
-		If $g_iFirstRun = -1 Then $g_iFirstRun = 1
-	EndIf
-	SetLogCentered(" BOT LOG ", Default, Default, True)
 
 	SaveConfig()
 	readConfig()
@@ -140,6 +150,7 @@ Func BotStop()
 	$g_bRunState = False
 	$g_bBotPaused = False
 	$g_bTogglePauseAllowed = True
+	$g_bRestart = False
 
 	;WinSetState($g_hFrmBotBottom, "", @SW_DISABLE)
 	Local $aCtrlState
@@ -184,7 +195,7 @@ Func BotStop()
 		If Not $g_bBotPaused Then $g_iTimePassed += Int(__TimerDiff($g_hTimerSinceStarted))
 		If ProfileSwitchAccountEnabled() And Not $g_bBotPaused Then $g_aiRunTime[$g_iCurAccount] += Int(__TimerDiff($g_ahTimerSinceSwitched[$g_iCurAccount]))
 		;AdlibUnRegister("SetTime")
-		$g_bRestart = True
+		;$g_bRestart = True
 
 	   If $g_hLogFile <> 0 Then
 		  FileClose($g_hLogFile)
