@@ -19,15 +19,17 @@ Func chkRequestCCHours()
 
 	If GUICtrlRead($g_hChkRequestTroopsEnable) = $GUI_CHECKED Then
 		GUICtrlSetState($g_hTxtRequestCC, $GUI_SHOW + $GUI_ENABLE)
-		For $i = $g_hLblRequestType To $g_hLblRequestCCHoursPM
+		For $i = $g_hLblRequestType To $g_ahCmbClanCastleSiege; $g_hLblRequestCCHoursPM
 			GUICtrlSetState($i, $GUI_ENABLE)
 		Next
+		GuiToggle_RequestOnlyDuringHours(True)
 		chkRequestCountCC()
 	Else
 		GUICtrlSetState($g_hTxtRequestCC, $GUI_SHOW + $GUI_DISABLE)
-		For $i = $g_hLblRequestType To $g_hLblRequestCCHoursPM
+		For $i = $g_hLblRequestType To $g_ahCmbClanCastleSiege; $g_hLblRequestCCHoursPM
 			GUICtrlSetState($i, $GUI_DISABLE)
 		Next
+		If GUICtrlRead($g_hChkRequestCCDefense) = $GUI_UNCHECKED Then GuiToggle_RequestOnlyDuringHours(False)
 	EndIf
 
 	SetRedrawBotWindowControls($bWasRedraw, $g_hGrpRequestCC, "chkRequestCCHours")
@@ -82,6 +84,44 @@ Func CmbClanCastleSpell()
 		If _GUICtrlComboBox_GetCurSel($g_ahCmbClanCastleSpell[$i]) = $eCSpell - $eLSpell Then _GUICtrlComboBox_SetCurSel($g_ahCmbClanCastleSpell[$i], $eSpellCount)
 	Next
 EndFunc   ;==>CmbClanCastleSpell
+
+; Request troops for defense (Demen)
+Func chkRequestDefense()
+    If GUICtrlRead($g_hChkRequestCCDefense) = $GUI_CHECKED Then
+        For $i = $g_hTxtRequestCCDefense To $g_ahTxtClanCastleTroopDef[2]
+            GUICtrlSetState($i, $GUI_ENABLE)
+        Next
+		CmbClanCastleTroopDef()
+		GuiToggle_RequestOnlyDuringHours(True)
+    Else
+        For $i = $g_hTxtRequestCCDefense To $g_ahTxtClanCastleTroopDef[2]
+            GUICtrlSetState($i, $GUI_DISABLE)
+        Next
+		If GUICtrlRead($g_hChkRequestTroopsEnable) = $GUI_UNCHECKED Then GuiToggle_RequestOnlyDuringHours(False)
+    EndIf
+EndFunc   ;==>chkRequestDefense
+
+Func CmbClanCastleTroopDef()
+	For $i = 0 To UBound($g_ahCmbClanCastleTroopDef) - 1
+		If _GUICtrlComboBox_GetCurSel($g_ahCmbClanCastleTroopDef[$i]) < $eTroopCount Then
+			GUICtrlSetState($g_ahTxtClanCastleTroopDef[$i], $GUI_ENABLE)
+		Else
+			GUICtrlSetState($g_ahTxtClanCastleTroopDef[$i], $GUI_DISABLE)
+		EndIf
+	Next
+EndFunc   ;==>CmbClanCastleTroopDef
+
+Func GuiToggle_RequestOnlyDuringHours($Enable = True)
+	If $Enable Then
+		For $i = $g_hLblOnlyDuringHours To $g_hLblRequestCCHoursPM
+			GUICtrlSetState($i, $GUI_ENABLE)
+		Next
+	Else
+		For $i = $g_hLblOnlyDuringHours To $g_hLblRequestCCHoursPM
+			GUICtrlSetState($i, $GUI_DISABLE)
+		Next
+	EndIf
+EndFunc   ;==>GuiToggle_RequestOnlyDuringHours
 
 Func chkRequestCCHoursE1()
 	If GUICtrlRead($g_hChkRequestCCHoursE1) = $GUI_CHECKED And GUICtrlRead($g_ahChkRequestCCHours[0]) = $GUI_CHECKED Then

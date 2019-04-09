@@ -17,7 +17,7 @@
 Func chkShieldStatus($bChkShield = True, $bForceChkPBT = False)
 
 	; skip shield data collection if force single PB, wait for shield, or close while training not enabled, or window is not on main base
-	If ($g_bForceSinglePBLogoff = False And ($g_bChkBotStop = True And $g_iCmbBotCond >= 19) = False) And $g_bCloseWhileTrainingEnable = False Or Not (IsMainPage()) Then Return
+    If ($g_bForceSinglePBLogoff = False And ($g_bChkBotStop = True And $g_iCmbBotCond >= 19) = False) And $g_bCloseWhileTrainingEnable = False And Not $g_bRequestCCDefense Or Not (IsMainPage()) Then Return
 
 	Local $Result, $iTimeTillPBTstartSec, $ichkTime = 0, $ichkSTime = 0, $ichkPBTime = 0
 
@@ -76,7 +76,7 @@ Func chkShieldStatus($bChkShield = True, $bForceChkPBT = False)
 		EndIf
 	EndIf
 
-	If $g_bForceSinglePBLogoff = False Then Return ; return if force single PB feature not enabled.
+	If Not $g_bForceSinglePBLogoff And Not $g_bRequestCCDefense Then Return ; return if force single PB feature And RequestCC Defense are both not enabled.
 
 	If _DateIsValid($g_sPBStartTime) Then
 		$ichkPBTime = Int(_DateDiff('s', $g_sPBStartTime, _NowCalc())) ; compare existing shield date/time to now.
